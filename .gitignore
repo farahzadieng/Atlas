@@ -1,0 +1,12 @@
+node_modules
+dist
+.env
+.env.*
+!.env.example
+.DS_Store
+
+# Never commit privileged Dexie Cloud CLI keys
+dexie-cloud.key
+dexie-cloud.json
+.env
+.env.*
