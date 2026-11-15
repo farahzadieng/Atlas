@@ -35,8 +35,10 @@ db.version(3).stores({projects:'id, title, type, status, archivedAt, updatedAt',
     }
   })
 })
-// Authentication requires Dexie Cloud. A public build never starts without a valid configuration.
-if (cloudReady) db.cloud.configure({databaseUrl:cloudUrl, requireAuth:true})
+// Explicit authentication via AuthGate prevents duplicate automatic and manual OTP prompts.
+// App data is only mounted after the matching user is logged in; do not query it before then.
+// Dexie Cloud still enforces private realm permissions remotely.
+if (cloudReady) db.cloud.configure({databaseUrl:cloudUrl, requireAuth:false})
 export const uid=()=>crypto.randomUUID()
 export const today=()=>{const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')}
 export function saveDownload(blob:Blob,filename:string){const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
