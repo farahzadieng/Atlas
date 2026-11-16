@@ -1,7 +1,7 @@
 import Dexie, { type EntityTable } from 'dexie'
 import dexieCloud from 'dexie-cloud-addon'
 import type {} from 'dexie-cloud-addon'
-import { cloudReady, cloudUrl } from './atlasConfig'
+import { cloudUrl } from './atlasConfig'
 export type ProjectStatus = 'active' | 'rest' | 'suspended' | 'completed'
 export type ProjectType = string
 export type CardType = 'task' | 'log' | 'note' | 'checklist' | 'decision'
@@ -15,7 +15,7 @@ export interface Card { id:string; projectId:string; type:CardType; title:string
 export interface Prompt { id:string; title:string; description:string; body:string; tags:string[]; isFavorite:boolean; projectId?:string; createdAt:number; updatedAt:number }
 export interface InboxItem { id:string; content:string; kind:InboxKind; projectId?:string; createdAt:number; updatedAt:number }
 export interface Activity { id:string; projectId:string; cardId?:string; kind:string; message:string; createdAt:number }
-export const db = new Dexie('atlas-local-v1', cloudReady ? { addons: [dexieCloud] } : {}) as Dexie & { projects:EntityTable<Project,'id'>; cards:EntityTable<Card,'id'>; prompts:EntityTable<Prompt,'id'>; inbox:EntityTable<InboxItem,'id'>; activity:EntityTable<Activity,'id'>; projectTypes:EntityTable<ProjectCategory,'id'> }
+export const db = new Dexie('atlas-local-v1', { addons: [dexieCloud] }) as Dexie & { projects:EntityTable<Project,'id'>; cards:EntityTable<Card,'id'>; prompts:EntityTable<Prompt,'id'>; inbox:EntityTable<InboxItem,'id'>; activity:EntityTable<Activity,'id'>; projectTypes:EntityTable<ProjectCategory,'id'> }
 // Upgrade the v0.1 database in place; pre-existing records remain intact.
 db.version(1).stores({projects:'id, title, type, status, updatedAt',inbox:'id, kind, projectId, createdAt'})
 db.version(2).stores({projects:'id, title, type, status, archivedAt, updatedAt',cards:'id, projectId, type, eventDate, dueAt, updatedAt, isMainTask',prompts:'id, title, isFavorite, updatedAt, *tags',inbox:'id, kind, projectId, createdAt',activity:'id, projectId, createdAt'}).upgrade(async tx => {
@@ -38,7 +38,7 @@ db.version(3).stores({projects:'id, title, type, status, archivedAt, updatedAt',
 // Explicit authentication via AuthGate prevents duplicate automatic and manual OTP prompts.
 // App data is only mounted after the matching user is logged in; do not query it before then.
 // Dexie Cloud still enforces private realm permissions remotely.
-if (cloudReady) db.cloud.configure({databaseUrl:cloudUrl, requireAuth:false})
+db.cloud.configure({databaseUrl:cloudUrl, requireAuth:false})
 export const uid=()=>crypto.randomUUID()
 export const today=()=>{const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')}
 export function saveDownload(blob:Blob,filename:string){const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}

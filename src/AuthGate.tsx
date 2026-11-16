@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useObservable } from 'dexie-react-hooks'
 import { db } from './db'
-import { allowedEmail, cloudReady } from './atlasConfig'
+import { allowedEmail } from './atlasConfig'
 import App from './App'
 
 // Read the persisted Dexie Cloud user only after the database has opened.
@@ -78,10 +78,4 @@ function CloudAuthGate() {
   </main>
 }
 
-export default function AuthGate() {
-  if (!cloudReady) {
-    if (import.meta.env.DEV) return <><div className="atlas-dev-warning" dir="rtl">حالت توسعه محلی: احراز هویت و همگام‌سازی فعال نیستند.</div><App /></>
-    return <main className="atlas-auth-screen" dir="rtl"><section className="atlas-auth-panel"><h1>پیکربندی اطلس کامل نیست</h1><p>allowedEmail و dexieCloudUrl را در atlas.config.json تنظیم کن و دوباره Build بگیر.</p></section></main>
-  }
-  return <CloudAuthGate />
-}
+export default function AuthGate() { return <CloudAuthGate /> }

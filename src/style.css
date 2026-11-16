@@ -74,3 +74,9 @@
   font-size: 12px;
 }
 .atlas-version-info strong { color: var(--text); font-size: 14px; direction: ltr; unicode-bidi: isolate; }
+
+/* Runtime configuration wizard */
+.atlas-setup-form { display: flex; flex-direction: column; gap: 16px; margin: 18px 0; text-align: right; }
+.atlas-setup-form label { display: flex; flex-direction: column; gap: 7px; font-weight: 600; }
+.atlas-setup-form input { width: 100%; min-width: 0; font-size: 16px; direction: ltr; text-align: left; padding: 12px; border-radius: 12px; border: 1px solid var(--border, #c6c6c6); background: var(--surface, white); color: inherit; }
+.atlas-setup-form button { justify-content: center; }

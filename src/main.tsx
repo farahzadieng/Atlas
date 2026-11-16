@@ -1,5 +1,61 @@
-import React from 'react'
-import {createRoot} from 'react-dom/client'
-import AuthGate from './AuthGate'
+import React, { useEffect, useState, type FormEvent } from 'react'
+import { createRoot } from 'react-dom/client'
+import { loadSettings, normalizeSettings, saveSettings, setBootSettings, type DeviceSettings } from './deviceSettings'
 import './style.css'
-createRoot(document.getElementById('root')!).render(<React.StrictMode><AuthGate/></React.StrictMode>)
+
+type AuthComponent = React.ComponentType
+
+function Bootstrap() {
+  const [status, setStatus] = useState<'loading' | 'setup' | 'ready' | 'error'>('loading')
+  const [Auth, setAuth] = useState<AuthComponent | null>(null)
+  const [email, setEmail] = useState('')
+  const [url, setUrl] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    let active = true
+    void loadSettings().then(async saved => {
+      if (!active) return
+      if (!saved) { setStatus('setup'); return }
+      setBootSettings(saved)
+      // Import AuthGate only after the URL is known. Its db dependency configures
+      // Dexie Cloud before the first DB request, and never gets a placeholder URL.
+      const loaded = await import('./AuthGate')
+      if (active) { setAuth(() => loaded.default); setStatus('ready') }
+    }).catch(e => { if (active) { setError(e instanceof Error ? e.message : String(e)); setStatus('error') } })
+    return () => { active = false }
+  }, [])
+
+  async function submit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    if (busy) return
+    setBusy(true); setError('')
+    try {
+      const saved: DeviceSettings = normalizeSettings(email, url)
+      await saveSettings(saved)
+      // A full reload guarantees that Dexie initializes once against the
+      // selected cloud URL. No config import can have happened before this.
+      window.location.reload()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'ذخیره تنظیمات ناموفق بود.')
+      setBusy(false)
+    }
+  }
+
+  if (status === 'ready' && Auth) return <Auth />
+  return <main className="atlas-auth-screen" dir="rtl"><section className="atlas-auth-panel">
+    <div className="atlas-auth-logo">A</div>
+    {status === 'loading' ? <><h1>اطلس</h1><p role="status">در حال بارگذاری تنظیمات دستگاه…</p></> :
+      status === 'error' ? <><h1>خطای ذخیره‌سازی</h1><p>مرورگر اجازه دسترسی به IndexedDB را نمی‌دهد. حالت Private Browsing را بررسی کن.</p></> :
+      <><h1>راه‌اندازی اطلس</h1><p>یک بار ایمیل و آدرس دیتابیس شخصی Dexie Cloud را وارد کن. اطلاعات فقط روی همین دستگاه ذخیره می‌شوند.</p>
+        <form onSubmit={e => void submit(e)} className="atlas-setup-form">
+          <label>ایمیل حساب<input type="email" required autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com" dir="ltr"/></label>
+          <label>آدرس Dexie Cloud<input type="url" required value={url} onChange={e=>setUrl(e.target.value)} placeholder="https://example.dexie.cloud" dir="ltr"/></label>
+          <button className="primary" type="submit" disabled={busy}>{busy ? 'در حال ذخیره…' : 'ذخیره و ادامه به ورود'}</button>
+        </form><small>برای استفاده، ابتدا دیتابیس خودت را در Dexie Cloud بساز و دامنه Atlas را در Whitelist آن ثبت کن.</small></>}
+    {error && <p role="alert" className="atlas-auth-error">{error}</p>}
+  </section></main>
+}
+
+createRoot(document.getElementById('root')!).render(<React.StrictMode><Bootstrap /></React.StrictMode>)
