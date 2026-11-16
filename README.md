@@ -1,65 +1,283 @@
-> **نسخه فعلی v0.3:** تغییرات تازه را در `CHANGES_v0.3.md` و راه‌اندازی Apple Shortcuts را در `APPLE_SHORTCUTS_SETUP.md` ببینید.
+<div align="center">
 
-# Atlas v0.2 — Personal Knowledge Manager
+# اطلس | Atlas
+### دفتر پروژه‌ها، گزارش پیشرفت و مدیریت دانش شخصی
 
-A private, Persian RTL, card-based local-first PWA built with React + TypeScript + Dexie.
+**یک PWA فارسی، راست‌به‌چپ، مینیمال و کارت‌محور برای کسانی که هم‌زمان چند پروژه متفاوت دارند.**
 
-## Start
+نسخه سورس: **v0.4.4** · React + TypeScript + Vite + Dexie.js + Dexie Cloud
 
-Requires Node.js compatible with Vite 7 (Node 20.19+ or 22.12+).
+</div>
+
+> **پیش از شروع:** این مخزن یک برنامه آماده نصب با دیتابیس عمومی مشترک نیست. هر فرد باید دیتابیس Dexie Cloud **متعلق به خودش** را ایجاد کند، اپ را با تنظیمات خودش Build و در دامنه خودش منتشر کند. داده‌های هیچ کاربری نباید به دیتابیس سازنده پروژه متصل شوند. این نسخه قابلیت Offline-First داخلی PWA را حفظ می‌کند اما برای استفاده و همگام‌سازی ابری به Dexie Cloud مستقل نیاز دارد.
+
+---
+
+# بخش اول — ایده، فلسفه و راهنمای استفاده
+
+## ۱. چرا Atlas ساخته شد؟
+
+وقتی هم‌زمان روی طراحی سایت، توسعه اپلیکیشن، خرید و فروش، تحقیق، نویسندگی و کارهای روزمره فعالیت می‌کنیم، ابزارهای پر از Board، Workspace، Workflow و تنظیمات پیچیده همیشه مناسب نیستند. ایده Atlas از یک دفتر کاغذی ساده آمد: **هر صفحه یک پروژه، و داخل آن صفحه، مجموعه‌ای از یادداشت‌ها، کارهای انجام‌شده و اتفاقات تاریخ‌دار.**
+
+Atlas این دفتر را به اپلیکیشنی تبدیل می‌کند که روی آیفون و مک از Safari نصب می‌شود. هدف اصلی آن این نیست که مدیریت تیم یا سازمان بزرگ را شبیه‌سازی کند؛ هدف، ثبت آسان دانش و پیشرفت شخصی است. در Atlas، **هر پروژه یک دفتر و هر کارت یک واحد مستقل اطلاعات** است. ایجاد کارت باید سریع باشد؛ مرور تاریخچه پروژه هم باید بدون حفاری در چند صفحه ممکن باشد.
+
+## ۲. اصول طراحی
+
+- **فارسی و RTL از پایه:** تمامی منوهای اصلی، صفحات و فرم‌ها برای خواندن فارسی طراحی شده‌اند. تاریخ‌ها در بخش‌های رابط به‌شکل فارسی نمایش داده می‌شوند؛ بعضی ورودی‌های تاریخ و ساعت از کنترل بومی مرورگر استفاده می‌کنند.
+- **کارت‌محور:** تمام اتفاق‌ها، کارها، یادداشت‌ها و تصمیم‌ها داخل کارت‌ها ثبت می‌شوند.
+- **تاریخچه‌محور:** کارت‌های یک پروژه، به‌طور پیش‌فرض از جدید به قدیم بر اساس تاریخ رویداد مرتب می‌شوند؛ کارت سنجاق‌شده اولویت نمایش دارد.
+- **تمرکز بدون شلوغی:** هر پروژه می‌تواند چند تسک اصلی هم‌زمان داشته باشد؛ داشبورد آن‌ها را یک‌جا نشان می‌دهد.
+- **Local-First با Cloud شخصی:** داده‌ها در IndexedDB محلی نگهداری می‌شوند و Dexie Cloud مسئول Sync بین دستگاه‌های متعلق به همان حساب است. PWA بعد از کش شدن منابع می‌تواند برخی کارها را در نبود اینترنت ادامه دهد؛ موفقیت Sync به اتصال بعدی وابسته است.
+- **رابط قابل شخصی‌سازی:** تم روشن با پس‌زمینه شیری، تم تیره، فونت فارسی و دسته‌بندی دلخواه پروژه‌ها.
+
+## ۳. امکانات برنامه
+
+### داشبورد
+
+نمایش تعداد پروژه‌های **فعال، استراحت، معلق و تکمیل‌شده**؛ جست‌وجوی زنده در عنوان پروژه‌ها؛ تسک‌های اصلی ناتمام از تمام پروژه‌ها؛ فعالیت‌های اخیر و میانبر دسترسی به پروژه‌ها. تعداد تسک اصلی در هر پروژه محدود به یک عدد نیست.
+
+### پروژه‌ها
+
+ایجاد، ویرایش، جست‌وجو، فیلتر و حذف پروژه. هر پروژه عنوان، توضیح، نوع و وضعیت دارد. وضعیت‌ها عبارت‌اند از `active` (فعال)، `rest` (استراحت)، `suspended` (معلق) و `completed` (تکمیل‌شده). **بایگانی** مستقل از وضعیت پروژه است؛ پروژه می‌تواند تکمیل‌شده و هم‌زمان بایگانی باشد. هر پروژه صفحه اختصاصی خودش را دارد.
+
+### کارت‌های پروژه
+
+پنج نوع کارت موجود است:
+
+1. **تسک (Task):** عنوان، توضیحات Markdown، وضعیت انجام، اولویت، موعد تاریخ/ساعت، سنجاق کردن، و انتخاب به‌عنوان تسک اصلی. تسک‌های اصلی در داشبورد قرار می‌گیرند.
+2. **گزارش پیشرفت (Log):** ثبت رخداد یا پیشرفت در تاریخ دلخواه، همراه با درصد و نوار پیشرفت.
+3. **یادداشت (Note):** نگهداری تجربه‌ها، منابع، ایده‌ها و متن‌های طولانی.
+4. **چک‌لیست (Checklist):** آیتم‌های مستقل که یک‌به‌یک ایجاد، تیک، ویرایش یا حذف می‌شوند؛ دیگر به نوشتن `- [ ]` در Markdown متکی نیستند.
+5. **تصمیم (Decision):** ثبت یک انتخاب و دلایل آن، با نشانگر بصری و رنگ مخصوص.
+
+رنگ‌ و المان هر نوع کارت متفاوت است. کارت‌ها قابلیت جست‌وجو بر اساس عنوان، متن و متن آیتم‌های چک‌لیست دارند. زمان ایجاد و ویرایش از **تاریخ وقوع رویداد** مستقل است.
+
+### Markdown
+
+در متن کارت‌ها از Markdown پشتیبانی می‌شود: **Bold**، *Italic*، تیتر، فهرست، لینک، جدول و سایر قابلیت‌های GitHub Flavored Markdown از طریق `react-markdown` و `remark-gfm`. متن به‌صورت Markdown ذخیره و در هنگام نمایش رندر می‌شود. اجرای HTML خام ناامن فعال نشده است. چک‌لیست مستقل از Markdown طراحی شده است.
+
+### برنامه و کارها
+
+نمایی یکپارچه از تسک‌های پروژه‌های مختلف همراه با موعد و وضعیت. تسک‌ها می‌توانند به Apple Calendar یا Reminders منتقل شوند؛ محدودیت‌های این اتصال در بخش Apple توضیح داده شده است.
+
+### پرامپت منیجر
+
+ایجاد پرامپت با **عنوان، توضیح کوتاه و متن کامل**؛ ذخیره تگ‌های دلخواه، فیلتر تگ، جست‌وجو در محتوا، علامت علاقه‌مندی، ارتباط اختیاری با پروژه و کپی سریع بدنه پرامپت.
+
+### اینباکس
+
+ثبت فوری فکر، ایده یا کار بدون نیاز به کامل‌کردن ساختار پروژه؛ پیوند دادن آن به یک پروژه و تبدیل به کارت در صورت نیاز. این بخش برای ثبت سریع موضوعاتی است که بعداً دسته‌بندی می‌شوند.
+
+### تنظیمات
+
+افزودن یا حذف **نوع پروژه دلخواه** (مثل «نوشتن رمان»)، تغییر تم روشن/تاریک، خروجی و بازیابی اطلاعات JSON، راهنمای Apple Shortcuts و نمایش **نسخه در حال اجرای Atlas** در انتهای تنظیمات. نوع پروژه‌ای که توسط پروژه‌ای استفاده می‌شود تا زمان تغییر آن پروژه قابل حذف نیست.
+
+### پشتیبان‌گیری
+
+فایل JSON حاوی پروژه‌ها، کارت‌ها، پرامپت‌ها، اینباکس، فعالیت‌ها و دسته‌بندی پروژه‌ها دریافت می‌شود. بازیابی به‌صورت **ادغام / Upsert** است، نه حذف و جایگزینی کامل. خروجی Markdown برای هر پروژه نیز وجود دارد. فایل پشتیبان را در مکانی امن نگه دارید؛ Sync جایگزین بکاپ نیست.
+
+### ظاهر و دستگاه‌ها
+
+رابط با فونت AradVF برای زبان فارسی، تم روشن شیری و تم تیره و چیدمان مناسب گوشی/تبلت/دسکتاپ طراحی شده است. روی آیفون، ناوبری پایین صفحه و فضاهای امن نمایشگر رعایت می‌شوند. در v0.4.4 اندازه نوشته داخل فیلدهای تایپ در Safari آیفون حداقل ۱۶ پیکسل شده تا زوم خودکار هنگام ظاهر شدن کیبورد رخ ندهد؛ **امکان زوم دستی کاربر غیرفعال نشده است.**
+
+### Apple Calendar و Apple Reminders
+
+روی Safari آیفون و مک، دکمه‌های مربوط به تسک‌ها با Deep Link از نوع `shortcuts://run-shortcut`، میانبرهای `Atlas Calendar` و `Atlas Reminder` را اجرا می‌کنند. این میانبرها باید **یک‌بار توسط کاربر در Apple Shortcuts ساخته و مجوزدهی شوند**. ورودی JSON شامل عنوان، پروژه، توضیحات و تاریخ/ساعت است؛ میانبر مقصد، رویداد یا یادآور را می‌سازد و می‌تواند اپ مربوطه را باز کند. این فرایند **به‌معنای اتصال مستقیم EventKit یا Sync دوطرفه نیست** و ثبت موفق را مرورگر به‌صورت قطعی تأیید نمی‌کند. راهنمای جزئی در `APPLE_DEEPLINK_SETUP.md` است.
+
+## ۴. حریم خصوصی و محدودیت‌ها
+
+- آدرس وب‌اپ و کد فرانت‌اند ممکن است عمومی باشند؛ **داده‌های کاربران باید با مجوزهای سمت Dexie Cloud حفاظت شوند**.
+- فایل `allowedEmail` در فرانت‌اند صرفاً کنترل تجربه ورود است، نه سیاست امنیتی سمت سرور. هر فرد باید حساب و دیتابیس مستقل خودش را داشته باشد و تنظیمات دسترسی Dexie Cloud را بررسی کند.
+- کلید مدیریتی CLI را هیچ‌وقت در GitHub، Cloudflare یا فایل عمومی قرار ندهید.
+- دیتابیس محلی مرورگر ممکن است با پاک شدن داده‌های سایت از دست برود. پیش از مهاجرت یا حذف PWA بکاپ بگیرید.
+- این نرم‌افزار در نسخه فعلی، سیستم همکاری تیمی، Sync دوطرفه با اپ‌های Apple، یا رمزنگاری انتهابه‌انتهای مستقل را ارائه نمی‌کند.
+- مجوز انتشار مجدد **فونت AradVF** باید توسط منتشرکننده بررسی شود. این README به‌تنهایی اجازه بازتوزیع فونت نمی‌دهد.
+
+---
+
+# بخش دوم — راهنمای کامل نصب، شخصی‌سازی و انتشار
+
+## ۵. پیش‌نیازها
+
+- یک حساب GitHub برای دریافت یا Fork سورس.
+- Node.js سازگار با Vite 7 (مثلاً 22.12 یا جدیدتر) و npm روی مک یا کامپیوتر توسعه.
+- یک حساب **شخصی** در Dexie Cloud و دیتابیس اختصاصی.
+- حساب Cloudflare برای انتشار (یا سرویس میزبانی استاتیک سازگار با HTTPS و SPA/PWA).
+- Safari روی دستگاه‌های Apple برای نصب نسخه PWA.
+
+> نیازی به Flask، VPS، سرور ایمیل یا SMTP شخصی ندارید؛ ارسال OTP و Sync در Dexie Cloud مدیریت می‌شوند.
+
+## ۶. دریافت کد
+
+در GitHub گزینه **Fork** را بزنید تا مخزن متعلق به خودتان ایجاد شود؛ یا مخزن را Clone کنید:
 
 ```bash
+git clone https://github.com/OWNER/REPOSITORY.git
+cd REPOSITORY
 npm install
+```
+
+`OWNER/REPOSITORY` را با آدرس واقعی Repository جایگزین کنید. برای جلوگیری از تداخل با نسخه دیگران، بهتر است Fork خودتان را روی Cloudflare متصل کنید.
+
+## ۷. ساخت دیتابیس مستقل Dexie Cloud
+
+از داخل فولدر پروژه:
+
+```bash
+npx dexie-cloud create
+```
+
+مراحل CLI را طی کنید، ایمیل خودتان را تأیید کنید و **آدرس دیتابیس** (مانند `https://example.dexie.cloud`) را یادداشت کنید. اطلاعات مدیریتی و کلید CLI ساخته‌شده باید خصوصی بمانند. قیمت‌گذاری و سقف پلن رایگان را از سایت رسمی Dexie Cloud بررسی کنید؛ محدودیت‌ها ممکن است تغییر کنند.
+
+## ۸. پیکربندی شخصی
+
+فایل نمونه را کپی کنید:
+
+```bash
+cp atlas.config.example.json atlas.config.json
+```
+
+سپس محتوای `atlas.config.json` را با داده‌های خودتان ویرایش کنید:
+
+```json
+{
+  "allowedEmail": "me@example.com",
+  "dexieCloudUrl": "https://my-own-database.dexie.cloud"
+}
+```
+
+هرگز ایمیل یا URL دیتابیس سازنده Atlas را استفاده نکنید. این دو مقدار در JavaScript نهایی قابل مشاهده‌اند و **راز امنیتی نیستند**. کنترل دسترسی واقعی باید در سرویس Dexie Cloud انجام شود.
+
+فایل شخصی `atlas.config.json` در `.gitignore` قرار دارد. **اگر این فایل در تاریخچه Git از قبل Track شده باشد، `.gitignore` به‌تنهایی کافی نیست.** بررسی کنید:
+
+```bash
+git ls-files atlas.config.json
+```
+
+اگر خروجی داشت، بدون پاک‌کردن فایل محلی از ایندکس خارجش کنید:
+
+```bash
+git rm --cached atlas.config.json
+```
+
+قبل از عمومی کردن یک مخزن قدیمی، تمام تاریخچه Commitها را برای کلید، ایمیل و فایل‌های خصوصی بررسی کنید؛ در صورت وجود کلید مدیریتی منتشرشده آن را باطل/تعویض کنید. برای شروع تمیز، ساخت Repository عمومی جدید بدون تاریخچه قدیمی امن‌تر است.
+
+## ۹. اجرای محلی و تست
+
+```bash
 npm run dev
 ```
 
-Open the localhost address shown by Vite. To test production/PWA:
+آدرسی مانند `http://localhost:5173` باز می‌شود. باید تنظیمات `atlas.config.json` کامل باشند تا ورود واقعی Dexie Cloud فعال شود. برای ساخت خروجی:
 
 ```bash
 npm run build
 npm run preview
 ```
 
-PWA install and offline caching work best on localhost or HTTPS. Test offline after opening the production preview while online at least once.
+Build عادی با `tsc -b && vite build` انجام می‌شود و پوشه `dist` تولید می‌کند. از `sudo` برای دستورات npm استفاده نکنید. خطاهای احتمالی تنظیمات، TypeScript و اتصال را قبل از انتشار رفع کنید.
 
-## Implemented
+## ۱۰. انتشار در Cloudflare با GitHub — روش پیشنهادی
 
-- Projects with `active`, `rest`, `suspended`, `completed` statuses and separate archival
-- Dedicated project notebooks, sorted by event date (newest first); pinned cards first
-- `task`, `log`, `note`, `checklist`, `decision` cards
-- Markdown preview and rendered GFM, interactive checklist toggles; unsafe raw HTML not enabled
-- Multiple main tasks per project, surfaced on dashboard
-- Task statuses, priorities, due dates, `.ics` file export for Apple Calendar import
-- Prompt library, favorites, tag filter and body copy
-- Inbox quick capture and conversion to a card when assigned to a project
-- Dashboard, activity audit trail, search, mobile navigation, responsive light/dark themes
-- Local AradVF font (`public/fonts/AradVF.woff2`)
-- JSON backup/export and merge import, including support for version 1 backups
-- Markdown export per project
+دو روش پیکربندی داریم؛ **فقط یکی** را انتخاب کنید:
 
-## Important limitations
+**الف) تنظیم متغیرهای محیطی برای Build خودکار (توصیه‌شده برای مخزن عمومی)**
 
-- **Not deployed.** No external services configured.
-- **No Dexie Cloud yet.** Data stays in IndexedDB on the current browser/device; there is no cross-device sync and browser data removal can delete it. Export backups frequently.
-- Apple Calendar: exports an all-day `.ics` based on task due date, and the user imports it manually. This is **not** live sync.
-- Apple Reminders: direct creation and Shortcuts bridge **not yet implemented**, pending testing on target Apple devices.
-- No automatic background sync, push notifications, or end-to-end encryption.
-- Browser PWA installation support differs by platform; SVG icon is included, and raster icons may be added for broader installation support.
-- Import is merge/upsert, not replacement; keep backups in a safe place and avoid importing untrusted JSON.
-- User-provided font is bundled for personal use; verify font distribution license before sharing or publishing the code.
+در Cloudflare هنگام تنظیم پروژه، دو متغیر را در محیط Build تعریف کنید:
 
-## Data migration
+| نام متغیر | مقدار |
+| --- | --- |
+| `ATLAS_ALLOWED_EMAIL` | ایمیل شخصی خودتان |
+| `ATLAS_DEXIE_CLOUD_URL` | URL دیتابیس شخصی Dexie Cloud |
 
-This version uses the **same Dexie database name `atlas-local-v1`** as the earlier v0.1 and upgrades it to schema version 2. Prior projects and inbox entries remain. Legacy `paused` becomes `rest` and legacy `archived` becomes `rest` with archival timestamp. Always export a backup from v0.1 before opening v0.2 on the same origin.
+سپس تنظیمات Build را بگذارید:
 
-## Design decisions
+```text
+Build command: node scripts/prepare-config.mjs && npm run build
+Build output directory: dist
+Production branch: main
+```
 
-- Markdown is stored as source text, not as HTML.
-- Multiple `isMainTask` cards are allowed within any project.
-- Date of event is distinct from timestamps of creation/update and task due date.
-- Archive is a separate field from project status.
-- Theme preference is device-local.
-- Database architecture is designed for later sync integration, but **Dexie Cloud requires additional schema and identity/security review** before enabling sync. Do not assume switching it on is just a config flag.
+اسکریپت `scripts/prepare-config.mjs` فایل `atlas.config.json` را **در محیط Build** ایجاد می‌کند و پس از آن Vite تنظیمات را به فرانت‌اند اضافه می‌کند. این متغیرها نیز محرمانه محسوب نمی‌شوند؛ رمز یا کلید مدیریتی را به آن‌ها اضافه نکنید.
 
-## Apple Deep Links (iPhone and macOS Safari)
-See `APPLE_DEEPLINK_SETUP.md`. Task due dates now support selecting both date and time. No direct EventKit integration or two-way Apple sync is implied.
+**ب) Build محلی:** اگر از فایل محلی `atlas.config.json` استفاده می‌کنید، همان `npm run build` کافی است. سپس محتوای `dist` را به سرویس میزبانی سازگار ارسال کنید. این روش در Git-connected Build بدون ایجاد فایل تنظیمات کار نخواهد کرد.
+
+> سازگاری با دیپلوی قبلی: دستور `npm run build` عمداً تغییر نکرده است. اگر دیپلوی فعلی شما از فایل تنظیمات موجود در Repository استفاده می‌کند، **قبل از خارج‌کردن فایل Trackشده**، متغیرهای محیطی و دستور جدید Cloudflare را تنظیم کنید. در غیر این صورت Build بعدی به دلیل نبود `atlas.config.json` شکست می‌خورد. هیچ‌وقت فایل نمونه را با مقادیر حساب شخصی در Repository عمومی Commit نکنید.
+
+در پنل Cloudflare (Workers یا Pages، بسته به نوع پروژه‌ای که قبلاً ساخته‌اید) یک پروژه متصل به GitHub بسازید و خروجی استاتیک `dist` را منتشر کنید. منوها ممکن است با نوع سرویس متفاوت باشند. برای React Router اگر از مسیرهای URL واقعی استفاده می‌کنید، باید fallback به `index.html` داشته باشید؛ این نسخه با ناوبری داخلی React عمدتاً یک SPA تک‌صفحه‌ای است.
+
+## ۱۱. Whitelist دامنه در Dexie Cloud
+
+پس از انتشار، Origin دقیق HTTPS خود را در Dexie Cloud ثبت کنید؛ در پوشه دارای تنظیمات مدیریت دیتابیس خودتان:
+
+```bash
+npx dexie-cloud whitelist https://YOUR-SITE.example.com
+npx dexie-cloud whitelist
+```
+
+دامنه را با آدرس واقعی منتشرشده جایگزین کنید. اگر از دامنه دیگری استفاده کنید، Origin جدید را هم باید مجاز کنید. کلید مدیریتی CLI را **هرگز** در فایل‌های استاتیک یا GitHub قرار ندهید.
+
+## ۱۲. اولین ورود و نصب PWA
+
+سایت را در Safari آیفون یا مک باز کنید و با ایمیل مجاز درخواست OTP بدهید. Dexie Cloud کد را ارسال می‌کند. پس از تأیید، Atlas می‌تواند نشست معتبر را در ذخیره‌سازی مرورگر نگه دارد؛ حفظ نشست به وضعیت IndexedDB و سیاست‌های دستگاه بستگی دارد و تضمین نامحدود نیست.
+
+- آیفون: Safari → Share → **Add to Home Screen**. در نسخه‌های پشتیبانی‌شده گزینه Open as Web App را فعال کنید.
+- مک: Safari → File → **Add to Dock**.
+
+روی هر دستگاه ممکن است ورود اولیه جداگانه لازم باشد. برنامه بعد از اتصال، داده‌های همان حساب را Sync می‌کند. اگر Sync فعال نشده، قبل از وارد کردن داده مهم علت را بررسی کنید.
+
+## ۱۳. تست مستقل بودن دیتابیس
+
+دو نصب آزمایشی با دو دیتابیس **کاملاً جدا** بسازید. در نصب A یک پروژه نمونه تعریف کنید. در نصب B تأیید کنید همان پروژه دیده نمی‌شود. سپس روی مک و آیفون با دیتابیس A وارد شوید و انتقال همان پروژه را بررسی کنید. برای هر نصب دامنه و ورود را با دیتابیس همان شخص تنظیم کنید.
+
+## ۱۴. به‌روزرسانی نسخه و PWA
+
+نسخه سورس در `package.json` ثبت می‌شود و Vite هنگام Build همین شماره را در برنامه قرار می‌دهد. در **تنظیمات → درباره اطلس**، شماره **نسخه در حال اجرا** را می‌بینید. این شماره نسخه دانلودشده/در حال اجراست، نه استعلام زنده از GitHub.
+
+در پروژه متصل به GitHub، پس از Push و موفق شدن Deployment، مرورگر باید Service Worker جدید را دریافت کند. `vite-plugin-pwa` در این پروژه با `registerType: 'autoUpdate'` تنظیم شده؛ زمان فعال‌شدن به Cache و باز/بسته بودن وب‌اپ بستگی دارد. برای تست، بعد از اطمینان از ذخیره‌شدن فرم‌های باز، برنامه را ببندید و دوباره اجرا کنید یا صفحه را Reload کنید؛ سپس شماره نسخه را بررسی کنید.
+
+**حتماً قبل از آپدیت از داده‌ها بکاپ JSON بگیرید.** تغییر شماره نسخه به‌تنهایی نیازمند تغییر Schema دیتابیس نیست. در v0.4.4 Schema، نام IndexedDB، سیستم OTP و آدرس Sync عوض نشده‌اند.
+
+## ۱۵. رفع اشکال
+
+| مشکل | بررسی |
+| --- | --- |
+| `atlas.config.json` پیدا نمی‌شود | فایل را محلی از نمونه بسازید، یا متغیرهای Cloudflare و دستور `prepare-config` را تنظیم کنید. |
+| OTP ارسال نمی‌شود | آدرس دیتابیس، ایمیل مجاز، وضعیت سرویس و Console را بررسی کنید. |
+| OTP دو بار می‌آید | مطمئن شوید نسخه فعلی استفاده می‌شود و درخواست ورود را چند بار پشت سر هم شروع نکرده‌اید؛ AuthGate فقط یک فراخوانی دستی را مجاز می‌کند. |
+| ورود هر بار درخواست می‌شود | پاک‌شدن داده‌های Safari/IndexedDB، حالت Private، Origin متفاوت، یا نشست نامعتبر را بررسی کنید. |
+| اطلاعات بین دو دستگاه متفاوت است | مطمئن شوید هر دو دستگاه دقیقاً به همان دیتابیس Dexie Cloud و حساب متصل‌اند و Sync موفق شده است. |
+| صفحه آیفون هنگام تایپ زوم می‌شود | نسخه v0.4.4 یا جدیدتر باید در تنظیمات نمایش داده شود؛ فونت کنترل‌های ورودی در Safari iOS حداقل ۱۶px است. |
+| نسخه جدید دیده نمی‌شود | Deployment را بررسی کنید، برنامه را دوباره باز/Reload کنید و مقدار نسخه در تنظیمات را بخوانید. |
+| Deep Link اپل کار نمی‌کند | میانبر مربوطه را روی همان دستگاه بسازید، نام آن را دقیقاً یکسان تنظیم کنید و مجوزهای Calendar/Reminders را تأیید کنید. |
+| فایل JSON بکاپ بازیابی نمی‌شود | ساختار و نسخه Backup و محدودیت حجم فایل را بررسی کنید؛ قبل از Import مجدد بکاپ بگیرید. |
+
+## ۱۶. توسعه، انتشار عمومی و حقوق فایل‌ها
+
+برای انتشار متن‌باز، یک `LICENSE` معتبر برای سورسی که حق انتشارش را دارید اضافه کنید (مثلاً MIT). فونت AradVF، آیکون‌ها و هر دارایی شخص ثالث باید از نظر مجوز بازتوزیع **جداگانه** بررسی شوند. تا زمان روشن شدن مجوز، فونت یا دارایی فاقد اجازه را از مخزن عمومی کنار بگذارید و جایگزین مجاز استفاده کنید.
+
+پیشنهاد ساختار انتشار: یک Repository عمومی تازه با فایل `atlas.config.example.json`، این README، سورس و راهنماهای Apple؛ بدون کلیدهای مدیریتی، رمزها، بکاپ‌های واقعی یا تاریخچه شخصی. مخزن فعلی و دیپلوی شخصی می‌توانند مستقل باقی بمانند.
+
+## ۱۷. ساختار مهم پروژه
+
+```text
+atlas/
+├── src/
+│   ├── App.tsx             # داشبورد، پروژه‌ها، کارت‌ها و تنظیمات
+│   ├── AuthGate.tsx        # ورود با Dexie Cloud OTP
+│   ├── db.ts               # Dexie و ساختار اطلاعات
+│   ├── atlasConfig.ts      # خواندن تنظیمات هنگام Build
+│   └── style.css           # طراحی واکنش‌گرا و تم‌ها
+├── public/                 # فونت، آیکون و فایل‌های PWA
+├── scripts/
+│   └── prepare-config.mjs  # ساخت تنظیمات از Cloudflare env
+├── atlas.config.example.json
+├── atlas.config.json      # فقط محلی / خارج از Git
+├── vite.config.ts          # تنظیم Build و PWA + نسخه اپ
+├── package.json
+└── README.md
+```
+
+---
+
+**Atlas برای حفظ خاطره کاری پروژه‌ها ساخته شده است: چه کردیم، چرا تصمیم گرفتیم، چه چیزهایی باقی مانده، و تجربه‌ای که نباید فراموش شود.**
