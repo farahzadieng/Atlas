@@ -1,101 +1,115 @@
-# Atlas — اطلس
-### دفتر پروژه‌ها و مدیریت دانش شخصی | نسخه 0.5.0
+# Atlas — Personal Knowledge Manager
 
-Atlas یک PWA فارسی و راست‌به‌چپ، متن‌باز و کارت‌محور است. هر کاربر باید دیتابیس **Dexie Cloud مستقل خودش** را بسازد؛ سایت عمومی Atlas هیچ دیتابیس مشترکی در اختیار کاربران قرار نمی‌دهد. تنظیمات اتصال در اولین اجرا روی دستگاه ذخیره می‌شوند.
+![Atlas app icon](./public/icon-512.png)
 
-# بخش اول — ایده، فلسفه و راهنمای استفاده
+**Atlas v0.5.1 · Beta**  
+**A Persian (Farsi), right-to-left, card-based personal project journal and knowledge manager.**
 
-## ۱. چرا Atlas ساخته شد؟
+Atlas is a Progressive Web App (PWA) designed to help you keep different kinds of personal work in one calm, organized place. It is intended for individuals rather than teams: website development, app projects, buying and selling, research, writing a novel, and everything in between.
 
-وقتی هم‌زمان روی طراحی سایت، توسعه اپلیکیشن، خرید و فروش، تحقیق، نویسندگی و کارهای روزمره فعالیت می‌کنیم، ابزارهای پر از Board، Workspace، Workflow و تنظیمات پیچیده همیشه مناسب نیستند. ایده Atlas از یک دفتر کاغذی ساده آمد: **هر صفحه یک پروژه، و داخل آن صفحه، مجموعه‌ای از یادداشت‌ها، کارهای انجام‌شده و اتفاقات تاریخ‌دار.**
+**Bring your own Dexie Cloud database.** Atlas does not provide a shared database. When you first open the app, you enter the email and Dexie Cloud database URL that **you** created. The connection information is stored on that device in IndexedDB. The app uses Dexie Cloud for email one-time-password (OTP) sign-in and synchronization across your devices. You do **not** need an `atlas.config.json` file, a Flask server, or a private backend for the web UI.
 
-Atlas این دفتر را به اپلیکیشنی تبدیل می‌کند که روی آیفون و مک از Safari نصب می‌شود. هدف اصلی آن این نیست که مدیریت تیم یا سازمان بزرگ را شبیه‌سازی کند؛ هدف، ثبت آسان دانش و پیشرفت شخصی است. در Atlas، **هر پروژه یک دفتر و هر کارت یک واحد مستقل اطلاعات** است. ایجاد کارت باید سریع باشد؛ مرور تاریخچه پروژه هم باید بدون حفاری در چند صفحه ممکن باشد.
+> **Language:** The application interface is currently in **Persian (Farsi)** and uses an RTL layout. This README is in English so anyone can set up the app. An English UI translation is not included.
+>
+> **Release status:** Beta. Back up important information and test your own hosting, security settings, and sync behavior before relying on the app for critical records.
 
-## ۲. اصول طراحی
+## 1. Why Atlas exists
 
-- **فارسی و RTL از پایه:** تمامی منوهای اصلی، صفحات و فرم‌ها برای خواندن فارسی طراحی شده‌اند. تاریخ‌ها در بخش‌های رابط به‌شکل فارسی نمایش داده می‌شوند؛ بعضی ورودی‌های تاریخ و ساعت از کنترل بومی مرورگر استفاده می‌کنند.
-- **کارت‌محور:** تمام اتفاق‌ها، کارها، یادداشت‌ها و تصمیم‌ها داخل کارت‌ها ثبت می‌شوند.
-- **تاریخچه‌محور:** کارت‌های یک پروژه، به‌طور پیش‌فرض از جدید به قدیم بر اساس تاریخ رویداد مرتب می‌شوند؛ کارت سنجاق‌شده اولویت نمایش دارد.
-- **تمرکز بدون شلوغی:** هر پروژه می‌تواند چند تسک اصلی هم‌زمان داشته باشد؛ داشبورد آن‌ها را یک‌جا نشان می‌دهد.
-- **Local-First با Cloud شخصی:** داده‌ها در IndexedDB محلی نگهداری می‌شوند و Dexie Cloud مسئول Sync بین دستگاه‌های متعلق به همان حساب است. PWA بعد از کش شدن منابع می‌تواند برخی کارها را در نبود اینترنت ادامه دهد؛ موفقیت Sync به اتصال بعدی وابسته است.
-- **رابط قابل شخصی‌سازی:** تم روشن با پس‌زمینه شیری، تم تیره، فونت فارسی و دسته‌بندی دلخواه پروژه‌ها.
+Atlas began with a paper notebook. Each page represented one project. Within that page were tasks to complete, tasks already finished, progress notes, lessons learned, and decisions made on particular dates. Conventional project management platforms can feel too heavy when you simply want to remember **what happened, what matters now, and what to do next**.
 
-## ۳. امکانات برنامه
+Atlas turns that approach into a digital, searchable project notebook:
 
-### داشبورد
+- **One project = one notebook.**
+- **One card = one task, note, checklist, decision, or progress entry.**
+- **Dates matter.** You can record when something happened independently of when you typed it.
+- **Priorities stay visible.** Mark multiple cards as main tasks; they appear on the dashboard.
+- **Personal knowledge should remain yours.** Each installation connects to a Dexie Cloud database owned by its user, rather than a database controlled by the website publisher.
 
-نمایش تعداد پروژه‌های **فعال، استراحت، معلق و تکمیل‌شده**؛ جست‌وجوی زنده در عنوان پروژه‌ها؛ تسک‌های اصلی ناتمام از تمام پروژه‌ها؛ فعالیت‌های اخیر و میانبر دسترسی به پروژه‌ها. تعداد تسک اصلی در هر پروژه محدود به یک عدد نیست.
+Atlas favors quick capture, chronological context, and a minimalist user interface over boards, organization charts, complex workflows, and team permissions.
 
-### پروژه‌ها
+## 2. Features
 
-ایجاد، ویرایش، جست‌وجو، فیلتر و حذف پروژه. هر پروژه عنوان، توضیح، نوع و وضعیت دارد. وضعیت‌ها عبارت‌اند از `active` (فعال)، `rest` (استراحت)، `suspended` (معلق) و `completed` (تکمیل‌شده). **بایگانی** مستقل از وضعیت پروژه است؛ پروژه می‌تواند تکمیل‌شده و هم‌زمان بایگانی باشد. هر پروژه صفحه اختصاصی خودش را دارد.
+### Dashboard
 
-### کارت‌های پروژه
+- Counts for projects in the **Active**, **Rest**, **Suspended**, and **Completed** states.
+- Instant title search for your projects.
+- Main tasks from all projects; multiple main tasks per project are supported.
+- Recent activity and links back into the corresponding projects.
 
-پنج نوع کارت موجود است:
+### Projects
 
-1. **تسک (Task):** عنوان، توضیحات Markdown، وضعیت انجام، اولویت، موعد تاریخ/ساعت، سنجاق کردن، و انتخاب به‌عنوان تسک اصلی. تسک‌های اصلی در داشبورد قرار می‌گیرند.
-2. **گزارش پیشرفت (Log):** ثبت رخداد یا پیشرفت در تاریخ دلخواه، همراه با درصد و نوار پیشرفت.
-3. **یادداشت (Note):** نگهداری تجربه‌ها، منابع، ایده‌ها و متن‌های طولانی.
-4. **چک‌لیست (Checklist):** آیتم‌های مستقل که یک‌به‌یک ایجاد، تیک، ویرایش یا حذف می‌شوند؛ دیگر به نوشتن `- [ ]` در Markdown متکی نیستند.
-5. **تصمیم (Decision):** ثبت یک انتخاب و دلایل آن، با نشانگر بصری و رنگ مخصوص.
+Create, search, filter, edit, archive, restore, and delete projects. Each project has a title, description, user-defined category, and status. Archiving is separate from status, so a completed project can also be archived. Open a project to see its own feed of cards, with newer entries first and pinned cards emphasized.
 
-رنگ‌ و المان هر نوع کارت متفاوت است. کارت‌ها قابلیت جست‌وجو بر اساس عنوان، متن و متن آیتم‌های چک‌لیست دارند. زمان ایجاد و ویرایش از **تاریخ وقوع رویداد** مستقل است.
+### Five kinds of cards
 
-### Markdown
+| Card | What it is for |
+| --- | --- |
+| **Task** | Action items with a status, priority, optional due date/time, pinning, and an optional **main task** flag. |
+| **Progress log** | Dated progress notes with a percentage and an illustrative progress bar. |
+| **Note** | Research, experience, discoveries, reference material, and freeform Markdown. |
+| **Checklist** | Individual items added, edited, ticked off, or removed one by one. They are not stored as Markdown checkboxes. |
+| **Decision** | Important decisions and the reasoning behind them. |
 
-در متن کارت‌ها از Markdown پشتیبانی می‌شود: **Bold**، *Italic*، تیتر، فهرست، لینک، جدول و سایر قابلیت‌های GitHub Flavored Markdown از طریق `react-markdown` و `remark-gfm`. متن به‌صورت Markdown ذخیره و در هنگام نمایش رندر می‌شود. اجرای HTML خام ناامن فعال نشده است. چک‌لیست مستقل از Markdown طراحی شده است.
+Card types have distinct visual accents. Search inside a project covers card titles and content, including checklist item text. Card creation/update timestamps are distinct from the event date, so you can write a retrospective log without losing its true date.
 
-### برنامه و کارها
+### Markdown support
 
-نمایی یکپارچه از تسک‌های پروژه‌های مختلف همراه با موعد و وضعیت. تسک‌ها می‌توانند به Apple Calendar یا Reminders منتقل شوند؛ محدودیت‌های این اتصال در بخش Apple توضیح داده شده است.
+Task, note, decision, and progress-log bodies support Markdown rendered with `react-markdown` and `remark-gfm`: headings, bold and italic, links, lists, tables, and more. Raw HTML execution is not enabled. Checklist cards use a dedicated interactive checklist editor instead of Markdown syntax.
 
-### پرامپت منیجر
+### Planner and tasks
 
-ایجاد پرامپت با **عنوان، توضیح کوتاه و متن کامل**؛ ذخیره تگ‌های دلخواه، فیلتر تگ، جست‌وجو در محتوا، علامت علاقه‌مندی، ارتباط اختیاری با پروژه و کپی سریع بدنه پرامپت.
+View tasks across different projects, track status and deadlines, and mark one or more tasks as main tasks to keep them visible on the dashboard.
 
-### اینباکس
+### Prompt manager
 
-ثبت فوری فکر، ایده یا کار بدون نیاز به کامل‌کردن ساختار پروژه؛ پیوند دادن آن به یک پروژه و تبدیل به کارت در صورت نیاز. این بخش برای ثبت سریع موضوعاتی است که بعداً دسته‌بندی می‌شوند.
+Store AI prompts with a title, short description, full prompt body, user-defined tags, optional project association, favorites, search, tag filtering, and one-click copy.
 
-### تنظیمات
+### Inbox (اینباکس)
 
-افزودن یا حذف **نوع پروژه دلخواه** (مثل «نوشتن رمان»)، تغییر تم روشن/تاریک، خروجی و بازیابی اطلاعات JSON، راهنمای Apple Shortcuts و نمایش **نسخه در حال اجرای Atlas** در انتهای تنظیمات. نوع پروژه‌ای که توسط پروژه‌ای استفاده می‌شود تا زمان تغییر آن پروژه قابل حذف نیست.
+Capture an idea or reminder before deciding where it belongs. Later, associate it with a project or turn it into a project card.
 
-### پشتیبان‌گیری
+### Settings, personalization, and backups
 
-فایل JSON حاوی پروژه‌ها، کارت‌ها، پرامپت‌ها، اینباکس، فعالیت‌ها و دسته‌بندی پروژه‌ها دریافت می‌شود. بازیابی به‌صورت **ادغام / Upsert** است، نه حذف و جایگزینی کامل. خروجی Markdown برای هر پروژه نیز وجود دارد. فایل پشتیبان را در مکانی امن نگه دارید؛ Sync جایگزین بکاپ نیست.
+- User-defined **project types**, such as “Novel Writing” or “E-commerce”. A type in use by a project cannot be deleted until it is no longer referenced.
+- Light mode with a warm cream background and a matching dark mode.
+- Responsive layout for phones, tablets, and desktop browsers, with mobile navigation and safe-area handling.
+- Persian typography using the bundled **AradVF** font. **Check the font’s redistribution license before redistributing this asset.** If you do not have the right to distribute it, replace it with a properly licensed font.
+- Export and import JSON backups of your data; project-level Markdown export.
+- Connection information and the running app version displayed in Settings.
 
-### ظاهر و دستگاه‌ها
+### Apple Calendar and Reminders (iPhone and Mac)
 
-رابط با فونت AradVF برای زبان فارسی، تم روشن شیری و تم تیره و چیدمان مناسب گوشی/تبلت/دسکتاپ طراحی شده است. روی آیفون، ناوبری پایین صفحه و فضاهای امن نمایشگر رعایت می‌شوند. در v0.4.4 اندازه نوشته داخل فیلدهای تایپ در Safari آیفون حداقل ۱۶ پیکسل شده تا زوم خودکار هنگام ظاهر شدن کیبورد رخ ندهد؛ **امکان زوم دستی کاربر غیرفعال نشده است.**
+For dated tasks, the app can open **Apple Shortcuts** using a `shortcuts://run-shortcut` deep link to invoke shortcuts named `Atlas Calendar` and `Atlas Reminder`. They can receive task details and create an item in the default destination, provided **you set up the shortcuts and permissions on your Apple devices**. This is **not** direct EventKit access or two-way Calendar/Reminders synchronization. The web app cannot reliably verify that an item was created. See [`APPLE_DEEPLINK_SETUP.md`](./APPLE_DEEPLINK_SETUP.md) for instructions.
 
-### Apple Calendar و Apple Reminders
+### PWA, local caching, and sync
 
-روی Safari آیفون و مک، دکمه‌های مربوط به تسک‌ها با Deep Link از نوع `shortcuts://run-shortcut`، میانبرهای `Atlas Calendar` و `Atlas Reminder` را اجرا می‌کنند. این میانبرها باید **یک‌بار توسط کاربر در Apple Shortcuts ساخته و مجوزدهی شوند**. ورودی JSON شامل عنوان، پروژه، توضیحات و تاریخ/ساعت است؛ میانبر مقصد، رویداد یا یادآور را می‌سازد و می‌تواند اپ مربوطه را باز کند. این فرایند **به‌معنای اتصال مستقیم EventKit یا Sync دوطرفه نیست** و ثبت موفق را مرورگر به‌صورت قطعی تأیید نمی‌کند. راهنمای جزئی در `APPLE_DEEPLINK_SETUP.md` است.
+Atlas can be installed as a PWA. The local database uses IndexedDB and synchronization uses Dexie Cloud. Cached assets and locally stored data can support use during temporary disconnections, while sync resumes when connectivity and the relevant permissions are available. **You still need your own Dexie Cloud database to initialize the app; this release does not offer a separate account-free setup mode.** Clearing browser/site data can remove local copies of data and saved connection settings.
 
-## ۴. حریم خصوصی و محدودیت‌ها
+## 3. Architecture and ownership
 
-- آدرس وب‌اپ و کد فرانت‌اند ممکن است عمومی باشند؛ **داده‌های کاربران باید با مجوزهای سمت Dexie Cloud حفاظت شوند**.
-- فایل `allowedEmail` در فرانت‌اند صرفاً کنترل تجربه ورود است، نه سیاست امنیتی سمت سرور. هر فرد باید حساب و دیتابیس مستقل خودش را داشته باشد و تنظیمات دسترسی Dexie Cloud را بررسی کند.
-- کلید مدیریتی CLI را هیچ‌وقت در GitHub، Cloudflare یا فایل عمومی قرار ندهید.
-- دیتابیس محلی مرورگر ممکن است با پاک شدن داده‌های سایت از دست برود. پیش از مهاجرت یا حذف PWA بکاپ بگیرید.
-- این نرم‌افزار در نسخه فعلی، سیستم همکاری تیمی، Sync دوطرفه با اپ‌های Apple، یا رمزنگاری انتهابه‌انتهای مستقل را ارائه نمی‌کند.
-- مجوز انتشار مجدد **فونت AradVF** باید توسط منتشرکننده بررسی شود. این README به‌تنهایی اجازه بازتوزیع فونت نمی‌دهد.
+| Layer | Technology |
+| --- | --- |
+| UI | React, TypeScript, Vite |
+| Local persistence | Dexie.js / IndexedDB |
+| Authentication and synchronization | Dexie Cloud |
+| PWA / service worker | vite-plugin-pwa |
+| Markdown rendering | react-markdown + remark-gfm |
+| Deployment | Static-hosting-compatible build (for example Cloudflare) |
 
----
+**Atlas is a frontend app; the code is shared, not the database.** Every user creates their own Dexie Cloud database and uses its URL and email when starting Atlas. The website owner does not host or pay for other users’ databases.
 
-# بخش دوم — راهنمای کامل نصب، شخصی‌سازی و انتشار
+The database URL and email are **not secrets**. They are saved in a separate, device-local IndexedDB store and are not committed into your repository. Actual protection of data depends on **Dexie Cloud authentication and server-side access controls**. A frontend email check alone is not an access-control policy. A database owner should review who can register and use that database and should never expose administrative credentials.
 
-## ۵. پیش‌نیازها
+## 4. Prerequisites
 
-- حساب GitHub برای دریافت یا توسعه سورس (اختیاری برای استفاده از سایت عمومی).
-- Node.js و npm برای توسعه محلی یا مدیریت دیتابیس از طریق CLI.
-- حساب Dexie Cloud و یک دیتابیس شخصی؛ از اطلاعات و سهمیه مالک Atlas استفاده نمی‌کنید.
-- برای انتشار اختصاصی، Cloudflare Workers/Pages یا یک میزبان فایل استاتیک HTTPS.
-- Safari مک یا آیفون برای نصب PWA؛ اجرا در مرورگرهای مدرن دیگر هم امکان‌پذیر است.
+- A current supported version of **Node.js** with `npm` (use a Node.js version supported by the Vite version in `package.json`).
+- Git to clone the source, or a ZIP download of the repository.
+- An email inbox you can access for Dexie Cloud OTP.
+- A personal **Dexie Cloud database**, created by you.
+- A modern browser for development; Safari on iPhone/macOS for the target Apple PWA experience.
+- For internet publishing, an HTTPS-capable static host (the maintainer uses Cloudflare Workers with static assets).
 
-## ۶. دانلود و اجرای محلی
+## 5. Clone and run locally
 
 ```bash
 git clone https://github.com/farahzadieng/Atlas.git
@@ -104,89 +118,124 @@ npm install
 npm run dev
 ```
 
-آدرس محلی Vite را باز کنید. تا وقتی دیتابیس Dexie Cloud شخصی و Origin مجاز نداشته باشید، ورود تکمیل نمی‌شود. هیچ `atlas.config.json` لازم نیست.
+Open the local URL printed by Vite, typically `http://localhost:5173`. The first-run setup screen will ask for your **email** and your **Dexie Cloud database URL**. You do not create or commit any `atlas.config.json` file.
 
-## ۷. ساخت دیتابیس شخصی در Dexie Cloud
+If you want to use Dexie Cloud with local development, whitelist the **exact origin** shown by the development server. The port matters.
+
+## 6. Create your own Dexie Cloud database
+
+From a terminal, with Node.js installed:
 
 ```bash
 npx dexie-cloud create
 ```
 
-دستور را مطابق راهنمای CLI انجام دهید. آدرس اختصاصی دیتابیس (`https://YOUR-ID.dexie.cloud`) و فایل مدیریتی `dexie-cloud.key` تولید می‌شود؛ کلید مدیریتی را خصوصی نگه دارید و هرگز Commit نکنید. سپس دامنه استفاده از Atlas را در همان دیتابیس Whitelist کنید:
+Follow the CLI prompts, enter your email, and verify the OTP you receive. Note the resulting URL, such as `https://your-id.dexie.cloud`.
+
+The Dexie Cloud CLI may create **`dexie-cloud.json`** and **`dexie-cloud.key`** in your working directory. **Do not commit either file.** The key contains privileged CLI credentials. The project’s `.gitignore` excludes them; still verify with `git status` before pushing.
+
+Read the official [Dexie Cloud CLI documentation](https://dexie.org/docs/cloud/cli) for commands and account-specific behavior. Cloud plans may have usage limits or charges; check current pricing yourself.
+
+## 7. Allow your app origin in Dexie Cloud
+
+Your Dexie Cloud database will need to allow the site where Atlas runs. From a directory where the CLI can find your database credentials, run:
 
 ```bash
-npx dexie-cloud whitelist https://YOUR-ATLAS-URL
+npx dexie-cloud whitelist http://localhost:5173
+npx dexie-cloud whitelist https://YOUR-ATLAS-SITE.example
+npx dexie-cloud whitelist
 ```
 
-برای اجرای محلی نیز می‌توانید Origin محلی را مجاز کنید، مانند `http://localhost:5173`. این دستور باید با اطلاعات مدیریتی متعلق به **دیتابیس همان کاربر** اجرا شود. اگر از سایت عمومی Atlas استفاده می‌کنید، **دامنه عمومی Atlas** را در Dexie Cloud خودتان Whitelist کنید.
+Replace both origins with the actual addresses you use. An origin includes its protocol, host, and any non-default port; do not include an arbitrary page path. The CLI's `whitelist` command can list registered origins and add new ones. **A whitelist is not a substitute for correct authorization rules.**
 
-## ۸. راه‌اندازی در اولین اجرا
+If you use the maintainer-hosted Atlas site instead of deploying your own copy, you must whitelist **that site’s origin** on **your** Dexie Cloud database. This does not connect you to the maintainer's database.
 
-۱. سایت Atlas را باز کنید. در نخستین اجرا فرم «راه‌اندازی اطلس» نمایش داده می‌شود.
-۲. ایمیل حساب خود را وارد کنید.
-۳. آدرس دیتابیس شخصی (`https://...dexie.cloud`) را وارد کنید.
-۴. «ذخیره و ادامه» را بزنید. این تنظیمات در IndexedDB مستقلی به نام `atlas-device-settings` روی همین دستگاه ذخیره می‌شوند.
-۵. Dexie Cloud از طریق ایمیل OTP هویت شما را تأیید می‌کند؛ نشست معتبر برای مراجعه‌های بعدی نگهداری می‌شود.
-۶. در تنظیمات Atlas امکان مشاهده ایمیل و URL و تغییر اتصال وجود دارد. **قبل از تغییر اتصال بکاپ بگیرید**؛ تغییر URL اطلاعات را بین دیتابیس‌ها کپی نمی‌کند.
+## 8. First-run setup and sign-in
 
-**نکته:** ذخیره‌سازی Safari، PWA نصب‌شده، یا دستگاه‌های مختلف ممکن است مستقل باشد؛ در این حالت تنظیم ایمیل و URL را یک بار روی هر نصب انجام دهید. پاک‌کردن داده‌های سایت، تنظیمات ذخیره‌شده را نیز پاک می‌کند.
+1. Open your running Atlas instance.
+2. Enter your own **email** and your own `https://...dexie.cloud` URL.
+3. Save the connection. Atlas stores the settings locally in IndexedDB and reloads to initialize the correct Dexie Cloud instance.
+4. Use **Send login code** to request an email OTP. Complete the Dexie Cloud login flow.
+5. Create a test project and card. Open the same Atlas origin on another device, enter the same connection information once, authenticate if necessary, and confirm that your data syncs.
 
-## ۹. Build و انتشار روی Cloudflare
+Each browser origin/device stores its own connection information and login state. You may need to repeat the initial setup for each new device, newly installed PWA, or new domain. The app keeps the settings until the browser/site data is deleted or becomes unavailable; session lifetime is controlled by Dexie Cloud.
+
+To change databases later, open Settings, use the **Change connection** action, and follow the backup warning. Switching databases does not migrate your data to the new database.
+
+## 9. Build and test
 
 ```bash
 npm run build
+npm run preview
 ```
 
-خروجی اپ در پوشه `dist` ساخته می‌شود. برای Git-connected deployment، مخزن GitHub را به Cloudflare Workers Static Assets یا Cloudflare Pages متصل کنید. تنظیمات رایج پروژه Vite:
+The build output is the `dist/` directory. You should see the app HTML, JavaScript, CSS, generated PWA manifest, service worker, font, and icon assets in the build output. The deploy command and asset-directory configuration depend on your hosting provider.
 
-| گزینه | مقدار |
-|---|---|
+**Important:** Neither `atlas.config.json` nor a configuration-generation build script is required. The normal build command is `npm run build`.
+
+## 10. Publish on Cloudflare
+
+The app is a Vite-built static PWA. Deploy `dist/` using a Cloudflare setup that serves static assets over HTTPS. There are multiple Cloudflare product flows; do not confuse an Edge Function JavaScript uploader with a static-asset deployment.
+
+A common approach is to connect your GitHub repository to a Cloudflare project and enable deploys on pushes. Ensure the deployment uses:
+
+| Setting | Value |
+| --- | --- |
+| Source branch | Your chosen production branch, often `main` |
 | Build command | `npm run build` |
-| Build output directory | `dist` |
-| Root directory | ریشه پروژه |
-| Production branch | `main` (یا شاخه انتشار شما) |
+| Output directory / static assets | `dist` |
+| Node environment | A Node.js release supported by this project's Vite version |
 
-**مهم برای ارتقا از نسخه قبلی:** در Cloudflare دستور `node scripts/prepare-config.mjs && npm run build` را حذف کنید و فقط `npm run build` بگذارید. دیگر هیچ فایل JSON حاوی ایمیل و آدرس دیتابیس در زمان Build لازم نیست. متغیرهای قبلی `ATLAS_ALLOWED_EMAIL` و `ATLAS_DEXIE_CLOUD_URL` نیز مصرف نمی‌شوند و قابل حذف‌اند.
+If using **Workers Builds**, also configure the appropriate **Deploy command** / static asset settings for that product; setting only the build command does not automatically guarantee static files are published. If using **Pages**, configure its output directory `dist`. Refer to the [Cloudflare static assets documentation](https://developers.cloudflare.com/workers/static-assets/) and [Workers Builds settings](https://developers.cloudflare.com/workers/ci-cd/builds/configuration/) for your chosen flow. Preserve any already working deployment settings when updating an existing installation.
 
-در هر Push جدید، Cloudflare همان سورس عمومی را Build می‌کند و برای همه کاربران سایت به‌روزرسانی منتشر می‌شود. هر مرورگر همچنان به دیتابیس خودش متصل است.
+Once the site is published, add its exact HTTPS origin to **your Dexie Cloud whitelist**, then open it and complete first-run setup.
 
-## ۱۰. مهاجرت از v0.4.4 بدون از دست دادن داده‌ها
+## 11. Install the PWA
 
-۱. قبل از دیپلوی، از مسیر تنظیمات Atlas یک بکاپ JSON تهیه کنید.
-۲. همان آدرس اصلی و Origin قبلی را حفظ کنید؛ تغییر دامنه باعث ایجاد فضای ذخیره‌سازی جدید در مرورگر می‌شود.
-۳. فایل‌های v0.5.0 را اعمال و Build محلی را بررسی کنید.
-۴. پس از انتشار جدید، ممکن است فرم اتصال را دوباره ببینید. **دقیقاً همان ایمیل و Dexie Cloud URL قبلی را وارد کنید**.
-۵. Dexie Cloud در حالت پیش‌فرض شناسه URL را به نام پایگاه داده محلی اضافه می‌کند؛ اگر URL تغییر نکرده باشد، انتظار داریم نشست و داده‌های محلی سابق قابل بازیابی باشند. روی هر دستگاه با یک کارت آزمایشی صحت Sync را تأیید کنید.
-۶. قبل از بکاپ و تست موفق، PWA یا داده‌های Safari را پاک نکنید.
+**iPhone (Safari):** Open the HTTPS site in Safari, use Share → **Add to Home Screen**, and enable “Open as Web App” if that option appears. The installation uses the bundled Atlas icon. Sign in and verify that cards sync.
 
-## ۱۱. حذف کامل فایل کانفیگ از Git
+**macOS (Safari):** Open the site in Safari and use **File → Add to Dock** where supported. The installed app has its own window and uses the same web backend as the browser tab.
 
-فایل `atlas.config.json` در نسخه جدید استفاده نمی‌شود. در پوشه مخزن:
+For the Shortcuts-based Apple integrations, set up the shortcuts on the corresponding device and grant requested Calendar/Reminders access. They do not install automatically with the PWA.
+
+## 12. Update Atlas
+
+For a deployment connected to GitHub, publish updates by committing and pushing to the connected branch:
 
 ```bash
-git ls-files atlas.config.json
-git rm --cached atlas.config.json
+npm run build
+git status
+git add .
+git commit -m "Update Atlas"
+git push origin main
 ```
 
-دستور دوم فایل را از فهرست فایل‌های Git حذف می‌کند، اما کپی روی مک شما را نگه می‌دارد؛ اگر خروجی دستور اول خالی است و فایل Track نشده، اجرای `git rm --cached` لازم نیست. سپس `.gitignore` را بررسی کنید که `/atlas.config.json` داخل آن باشد، Commit و Push کنید.
+Wait for the host to report a successful deployment. Because Atlas uses a service worker, an installed PWA may continue to show a cached version temporarily. Reopen the app or refresh when online, then visit **Settings → About Atlas** to see the **version currently running** (for this release, **v0.5.1 · Beta**). That label is not a live GitHub release lookup. Do not delete the PWA or clear site data just to force an update without checking your sync and backups first.
 
-**هشدار حریم خصوصی:** حذف فایل در Commit جدید، آن را از تاریخچه قدیمی Git حذف نمی‌کند. قبل از عمومی‌کردن مخزن، تاریخچه را بررسی و در صورت نیاز با یک مخزن تازه و تاریخچه تمیز شروع کنید. کلید مدیریتی `dexie-cloud.key` اگر افشا شده باشد باید تعویض شود. URL و ایمیل «رمز محرمانه» نیستند؛ محدودسازی واقعی دسترسی در Dexie Cloud ضروری است.
+If you are using a GitHub fork, upstream changes do not appear automatically unless you sync the fork or configure an update workflow. Users of the same deployed site receive updated app assets when the deployment and PWA update complete.
 
-## ۱۲. به‌روزرسانی PWA
+## 13. Backups, safety, and troubleshooting
 
-Atlas از Service Worker استفاده می‌کند و نسخه جاری را در «تنظیمات → درباره اطلس» نمایش می‌دهد. بعد از دیپلوی جدید، PWA را باز یا Reload کنید و نسخه را بررسی کنید. لزوماً بلافاصله پس از Push نسخه جدید روی تمام دستگاه‌ها فعال نمی‌شود.
+**Backups:** Export JSON regularly, especially before replacing devices, switching connections, or making larger changes. Sync protects against some device failures but is not a complete backup strategy. Test that your exports can be imported.
 
-## ۱۳. آزمون‌های توصیه‌شده قبل از عمومی‌سازی
+**No OTP arrives:** Check spam, the email entered in Atlas, and that the database URL belongs to your account. Check Dexie Cloud status and authorization behavior.
 
-- روی دو دستگاه، یک دیتابیس یکسان و اتصال Sync صحیح را تست کنید.
-- با دو URL مجزای Dexie Cloud، جداسازی داده‌ها را تست کنید.
-- OTP و حفظ نشست پس از بسته‌شدن PWA را تست کنید.
-- مرورگر Private را برای رفتار بدون تنظیمات آزمایش کنید؛ انتظار حفظ داده نداریم.
-- روی iPhone وجود آیکون، اندازه ورودی‌ها و ناوبری پایین را تست کنید.
-- حقوق بازتوزیع فونت AradVF و سایر فایل‌های شخص ثالث را بررسی کنید.
+**App asks for first-run setup again:** Verify you are using the same browser origin and that browser/site data was not cleared; device-local connection settings are stored in IndexedDB. Private browsing or privacy-cleaning tools may prevent persistence.
 
-## ۱۴. فناوری‌ها
+**Login succeeds but your data is missing:** Confirm you entered the same database URL and account as on your other device, and verify sync completed. Different databases intentionally have separate data.
 
-React + TypeScript + Vite + Dexie.js + Dexie Cloud + IndexedDB + vite-plugin-pwa.
+**CORS / origin error:** Whitelist the exact site origin in your own Dexie Cloud instance.
 
-در نسخه جدید **اپ به کانفیگ زمان Build وابسته نیست**. ساختار کارت‌ها، داشبورد، گزارش پیشرفت، Markdown، مدیریت پرامپت‌ها و خروجی تقویم بدون بازنویسی حفظ شده است.
+**Build fails:** Run `npm install`, confirm Node.js compatibility, and inspect the full output of `npm run build`. If TypeScript reports `__ATLAS_VERSION__`, ensure the declaration in `src/vite-env.d.ts` and the `define` value in `vite.config.ts` are both present.
+
+**iPhone keyboard zooms the page:** Input controls use at least a 16px font on iOS. Avoid modifying the responsive CSS to set editable fields below 16px.
+
+**PWA still shows an old version:** Check successful deployment, then reload/reopen online. The Settings version indicates the currently loaded build.
+
+**Privacy and security:** Do not push Dexie administrative keys, emails containing OTPs, backups, or secrets to public repositories. Atlas's local configuration contains an email and a database URL, not an administrative token. The application's visible URL and frontend assets are not an access-control boundary. The database owner must configure appropriate authorization on Dexie Cloud.
+
+## 14. Repository and contributions
+
+The UI is Farsi-first; issues, documentation, and contributions can be written in English. If you publish your own changes, avoid putting personal database URLs or administrative credentials into commits. The app icon is located under `public/` and the installed PWA manifest is generated from `vite.config.ts`.
+
+**Licensing:** Confirm the repository's actual license and the licenses of bundled assets before distributing the project. In particular, do not assume the included AradVF font can be redistributed without permission. A public GitHub repository does not, by itself, grant an open-source license.

@@ -80,3 +80,7 @@
 .atlas-setup-form label { display: flex; flex-direction: column; gap: 7px; font-weight: 600; }
 .atlas-setup-form input { width: 100%; min-width: 0; font-size: 16px; direction: ltr; text-align: left; padding: 12px; border-radius: 12px; border: 1px solid var(--border, #c6c6c6); background: var(--surface, white); color: inherit; }
 .atlas-setup-form button { justify-content: center; }
+
+/* Atlas v0.5.1: sidebar identity and release indicator */
+.brand img.brand-icon, img.brand-icon { display:block; width:42px; height:42px; object-fit:cover; border-radius:13px; padding:0; background:transparent; }
+.atlas-release-label { display:block; direction:ltr; unicode-bidi:isolate; font-variant-numeric:tabular-nums; letter-spacing:.02em; }
