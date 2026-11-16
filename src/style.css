@@ -52,3 +52,25 @@
   .mobile-tabs button { font-size: 11px; }
   .mobile-tabs button svg { width: 21px; height: 21px; }
 }
+
+/* Atlas v0.4.4 — iOS Safari: prevent focus auto-zoom without disabling pinch-zoom.
+   On iPhone, editable controls must have a computed font-size of at least 16px. */
+@supports (-webkit-touch-callout: none) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+/* Keep the displayed version visually distinct but unobtrusive. */
+.atlas-version-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 12px;
+}
+.atlas-version-info strong { color: var(--text); font-size: 14px; direction: ltr; unicode-bidi: isolate; }
