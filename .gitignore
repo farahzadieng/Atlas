@@ -10,3 +10,6 @@ dexie-cloud.key
 dexie-cloud.json
 .env
 .env.*
+
+
+/atlas.config.json
