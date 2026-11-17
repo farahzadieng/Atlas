@@ -84,3 +84,21 @@
 /* Atlas v0.5.1: sidebar identity and release indicator */
 .brand img.brand-icon, img.brand-icon { display:block; width:42px; height:42px; object-fit:cover; border-radius:13px; padding:0; background:transparent; }
 .atlas-release-label { display:block; direction:ltr; unicode-bidi:isolate; font-variant-numeric:tabular-nums; letter-spacing:.02em; }
+
+/* Atlas v0.6.0 (tetha): keep native iOS date/datetime controls within card form. */
+.field-pair { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.field-pair > label { min-width: 0; max-width: 100%; }
+.form label input[type="date"],
+.form label input[type="datetime-local"] {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+@media (max-width: 560px) {
+  .field-pair { grid-template-columns: minmax(0, 1fr); }
+  .modal, .form { min-width: 0; }
+  .form label input[type="date"],
+  .form label input[type="datetime-local"] { min-width: 0; }
+}
