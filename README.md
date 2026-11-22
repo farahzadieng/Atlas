@@ -165,9 +165,16 @@ To change databases later, open Settings, use the **Change connection** action, 
 ## 9. Build and test
 
 ```bash
+npm ci
+npm run format:check
+npm run lint
+npm run typecheck
+npm test
 npm run build
 npm run preview
 ```
+
+Use `npm run format` to format the application components and test files. See [AGENTS.md](./AGENTS.md) for the feature map, data contracts, and UI conventions.
 
 The build output is the `dist/` directory. You should see the app HTML, JavaScript, CSS, generated PWA manifest, service worker, font, and icon assets in the build output. The deploy command and asset-directory configuration depend on your hosting provider.
 
@@ -187,6 +194,8 @@ A common approach is to connect your GitHub repository to a Cloudflare project a
 | Node environment | A Node.js release supported by this project's Vite version |
 
 If using **Workers Builds**, also configure the appropriate **Deploy command** / static asset settings for that product; setting only the build command does not automatically guarantee static files are published. If using **Pages**, configure its output directory `dist`. Refer to the [Cloudflare static assets documentation](https://developers.cloudflare.com/workers/static-assets/) and [Workers Builds settings](https://developers.cloudflare.com/workers/ci-cd/builds/configuration/) for your chosen flow. Preserve any already working deployment settings when updating an existing installation.
+
+The build copies `public/_headers` to `dist/_headers`. Cloudflare applies these rules to static asset responses. The policy allows HTTPS and WebSocket connections to each user’s Dexie Cloud database. If you use a Worker or Pages Function that generates its own response, verify the headers on that response separately.
 
 Once the site is published, add its exact HTTPS origin to **your Dexie Cloud whitelist**, then open it and complete first-run setup.
 

@@ -1,39 +1,446 @@
-import { allowedEmail, cloudUrl } from './atlasConfig'
-import { saveSettings } from './deviceSettings'
-import {useEffect,useRef,useState,type FormEvent,type ReactNode} from 'react'
-import {useLiveQuery} from 'dexie-react-hooks'
-import ReactMarkdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
-import {Archive,ArrowLeft,BookOpen,CalendarDays,Check,CheckCircle2,Clipboard,Clock3,Download,Edit3,FileText,FolderKanban,History,Inbox,LayoutDashboard,Menu,Moon,Plus,Search,Settings2,Star,Sun,Trash2,Upload, X,Pin,CalendarPlus,BarChart3,Scale,CheckSquare,StickyNote} from 'lucide-react'
-import {db,uid,today,exportBackup,importBackup,logActivity,saveDownload,type Project,type ProjectStatus,type ProjectType,type Card,type CardType,type TaskStatus,type Priority,type Prompt,type InboxKind,type ChecklistItem,type ProjectCategory} from './db'
+import { useState, useRef, useEffect } from 'react'
+import { useLiveQuery } from 'dexie-react-hooks'
+import {
+  LayoutDashboard,
+  FolderKanban,
+  CalendarDays,
+  BookOpen,
+  Inbox as InboxIcon,
+  Settings2,
+  X,
+  Menu,
+  Moon,
+  Sun,
+  Check,
+} from 'lucide-react'
+import {
+  db,
+  logActivity,
+  importBackup,
+  saveDownload,
+  type Project,
+  type Card,
+  type Prompt,
+} from './db'
+import { matchesCardFilter, textMatches, typeText } from './presentation'
+import { Inbox } from './views/Inbox'
+import { ProjectModal } from './forms/ProjectModal'
+import { CardModal } from './forms/CardModal'
+import { PromptModal } from './forms/PromptModal'
+import { Dashboard } from './views/Dashboard'
+import { Projects } from './views/Projects'
+import { ProjectNotebook } from './views/ProjectNotebook'
+import { Planner } from './views/Planner'
+import { Prompts } from './views/Prompts'
+import { Settings } from './views/Settings'
 
-type Page='dashboard'|'projects'|'project'|'planner'|'prompts'|'inbox'|'settings'
-const statusText:Record<ProjectStatus,string>={active:'فعال',rest:'استراحت',suspended:'معلق',completed:'تکمیل‌شده'}
-const typeText:Record<CardType,string>={task:'تسک',log:'گزارش پیشرفت',note:'یادداشت',checklist:'چک‌لیست',decision:'تصمیم'}
-const taskText:Record<TaskStatus,string>={todo:'انجام‌نشده',doing:'در حال انجام',done:'انجام‌شده'}
+import type { Page } from './navigation'
 
-const timeFmt=(n:number)=>new Intl.DateTimeFormat('fa-IR',{dateStyle:'medium'}).format(new Date(n))
-const dateFmt=(d?:string)=>d?new Intl.DateTimeFormat('fa-IR',{dateStyle:'medium',timeZone:'UTC'}).format(new Date(`${d.slice(0,10)}T12:00:00Z`)):'بدون تاریخ'
-const dueFmt=(d?:string)=>!d?'بدون موعد':d.includes('T')?new Intl.DateTimeFormat('fa-IR',{dateStyle:'medium',timeStyle:'short'}).format(new Date(d)):dateFmt(d)
-const textMatches=(text:string,q:string)=>text.toLocaleLowerCase('fa').includes(q.trim().toLocaleLowerCase('fa'))
-function Modal({title,children,onClose}: {title:string;children:ReactNode;onClose:()=>void}){return <div className="modal-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget)onClose()}}><section className="modal" role="dialog" aria-modal="true" aria-label={title}><header className="modal-header"><h2>{title}</h2><button className="icon-button" onClick={onClose} aria-label="بستن"><X size={20}/></button></header>{children}</section></div>}
-function Markdown({value,onToggle}: {value:string;onToggle?:(index:number)=>void}){let checkIndex=0;return <div className="markdown"><ReactMarkdown remarkPlugins={[remarkGfm]} components={{a:({href,children})=><a href={href} target="_blank" rel="noopener noreferrer">{children}</a>,input:({type,checked})=>{if(type==='checkbox'){const at=checkIndex++;return <input type="checkbox" checked={!!checked} disabled={!onToggle} onChange={()=>onToggle?.(at)} aria-label="تغییر وضعیت چک‌لیست"/>}return null}}}>{value||'_'}</ReactMarkdown></div>}
-function sendToApple(card:Card, project:string, target:'calendar'|'reminder'){
- // Apple provides no documented Calendar/Reminders URL that directly creates a record.
- // Use the official Shortcuts deep link as the bridge, on both macOS and iOS Safari.
- const name=target==='calendar'?'Atlas Calendar':'Atlas Reminder';
- const due=card.dueAt||'';
- const payload=JSON.stringify({
-  title:card.title,project,notes:card.markdownBody,id:card.id,
-  dueAt:due, // local YYYY-MM-DD or YYYY-MM-DDTHH:mm (never reinterpret as UTC)
-  hasTime:due.includes('T'),
-  durationMinutes:60,
-  source:'Atlas'
- });
- const url=`shortcuts://run-shortcut?name=${encodeURIComponent(name)}&input=text&text=${encodeURIComponent(payload)}`;
- // Must be invoked directly by a user click; Safari may request confirmation.
- window.location.assign(url);
+function App() {
+  const [page, setPage] = useState<Page>('dashboard'),
+    [selected, setSelected] = useState<string>(''),
+    [drawer, setDrawer] = useState(false),
+    [theme, setTheme] = useState<'light' | 'dark' | 'system'>(() => {
+      const saved = localStorage.getItem('atlas-theme-mode')
+      return saved === 'light' || saved === 'dark' ? saved : 'system'
+    }),
+    [systemDark, setSystemDark] = useState(
+      () => window.matchMedia('(prefers-color-scheme: dark)').matches,
+    ),
+    [notice, setNotice] = useState('')
+  const [projectForm, setProjectForm] = useState<Project | null | undefined>(
+      undefined,
+    ),
+    [cardForm, setCardForm] = useState<Card | null | undefined>(undefined),
+    [promptForm, setPromptForm] = useState<Prompt | null | undefined>(undefined)
+  const [dashQuery, setDashQuery] = useState(''),
+    [newCategory, setNewCategory] = useState(''),
+    [query, setQuery] = useState(''),
+    [filter, setFilter] = useState('all'),
+    [promptTag, setPromptTag] = useState('all')
+  const fileRef = useRef<HTMLInputElement>(null)
+  const projects = useLiveQuery(() => db.projects.toArray(), []) ?? []
+  const projectTypes = useLiveQuery(() => db.projectTypes.toArray(), []) ?? []
+  const cards = useLiveQuery(() => db.cards.toArray(), []) ?? []
+  const prompts = useLiveQuery(() => db.prompts.toArray(), []) ?? []
+  const inbox = useLiveQuery(() => db.inbox.toArray(), []) ?? []
+  const activities =
+    useLiveQuery(
+      () => db.activity.orderBy('createdAt').reverse().limit(60).toArray(),
+      [],
+    ) ?? []
+  useEffect(() => {
+    const query = window.matchMedia('(prefers-color-scheme: dark)')
+    const onChange = (event: MediaQueryListEvent) =>
+      setSystemDark(event.matches)
+    setSystemDark(query.matches)
+    query.addEventListener('change', onChange)
+    return () => query.removeEventListener('change', onChange)
+  }, [])
+  const resolvedTheme =
+    theme === 'system' ? (systemDark ? 'dark' : 'light') : theme
+  useEffect(() => {
+    document.documentElement.dataset.theme = resolvedTheme
+    localStorage.setItem('atlas-theme-mode', theme)
+  }, [theme, resolvedTheme])
+  const toast = (s: string) => {
+    setNotice(s)
+    window.setTimeout(() => setNotice(''), 3500)
+  }
+  const go = (p: Page, id = '') => {
+    setPage(p)
+    setSelected(id)
+    setDrawer(false)
+    setQuery('')
+    setFilter('all')
+  }
+  const activeProjects = projects.filter((p) => !p.archivedAt)
+  const project = projects.find((p) => p.id === selected)
+  const cardList = cards
+    .filter((c) => c.projectId === selected)
+    .filter((c) => matchesCardFilter(c, filter))
+    .filter((c) =>
+      textMatches(
+        `${c.title} ${c.markdownBody} ${(c.checklistItems || []).map((i) => i.text).join(' ')}`,
+        query,
+      ),
+    )
+    .sort(
+      (a, b) =>
+        Number(b.isPinned) - Number(a.isPinned) ||
+        (
+          b.eventDate ?? new Date(b.createdAt).toISOString().slice(0, 10)
+        ).localeCompare(
+          a.eventDate ?? new Date(a.createdAt).toISOString().slice(0, 10),
+        ) ||
+        b.createdAt - a.createdAt,
+    )
+  const mainTasks = cards
+    .filter(
+      (c) =>
+        c.type === 'task' &&
+        c.isMainTask &&
+        c.taskStatus !== 'done' &&
+        !projects.find((p) => p.id === c.projectId)?.archivedAt,
+    )
+    .sort((a, b) => b.updatedAt - a.updatedAt)
+  const navigation: [Page, string, typeof LayoutDashboard][] = [
+    ['dashboard', 'داشبورد', LayoutDashboard],
+    ['projects', 'پروژه‌ها', FolderKanban],
+    ['planner', 'برنامه و کارها', CalendarDays],
+    ['prompts', 'مدیریت پرامپت', BookOpen],
+    ['inbox', 'اینباکس', InboxIcon],
+    ['settings', 'تنظیمات', Settings2],
+  ]
+  async function removeProject(p: Project) {
+    if (
+      !window.confirm(
+        `پروژه «${p.title}» همراه با تمام کارت‌ها و سوابقش حذف شود؟`,
+      )
+    )
+      return
+    await db.transaction('rw', db.projects, db.cards, db.activity, async () => {
+      await db.cards.where('projectId').equals(p.id).delete()
+      await db.activity.where('projectId').equals(p.id).delete()
+      await db.projects.delete(p.id)
+    })
+    toast('پروژه حذف شد.')
+    go('projects')
+  }
+  async function removeCard(c: Card) {
+    if (!window.confirm('این کارت حذف شود؟')) return
+    await db.cards.delete(c.id)
+    await logActivity(c.projectId, 'delete', `کارت «${c.title}» حذف شد`)
+    toast('کارت حذف شد.')
+  }
+  async function updateCard(c: Card, patch: Partial<Card>, msg: string) {
+    await db.cards.update(c.id, { ...patch, updatedAt: Date.now() })
+    await logActivity(c.projectId, 'update', msg, c.id)
+  }
+  async function toggleChecklist(c: Card, index: number) {
+    const items = [...(c.checklistItems || [])]
+    if (!items[index]) return
+    items[index] = { ...items[index], done: !items[index].done }
+    await updateCard(
+      c,
+      { checklistItems: items },
+      `آیتم چک‌لیست «${c.title}» به‌روزرسانی شد`,
+    )
+  }
+  async function importFile(file?: File) {
+    if (!file) return
+    if (
+      !window.confirm(
+        'اطلاعات بکاپ با اطلاعات فعلی ادغام شود؟ شناسه‌های مشترک جایگزین خواهند شد.',
+      )
+    )
+      return
+    try {
+      const n = await importBackup(file)
+      toast(
+        `${n.projects} پروژه، ${n.cards} کارت و ${n.prompts} پرامپت بازیابی شد.`,
+      )
+    } catch (e) {
+      toast(e instanceof Error ? e.message : 'خطای بازیابی')
+    } finally {
+      if (fileRef.current) fileRef.current.value = ''
+    }
+  }
+  function exportProject(p: Project) {
+    const c = cards
+      .filter((x) => x.projectId === p.id)
+      .sort((a, b) => a.createdAt - b.createdAt)
+    const md =
+      `# ${p.title}\n\n${p.description}\n\n` +
+      c
+        .map(
+          (x) =>
+            `## ${x.title}\n\nنوع: ${typeText[x.type]} | تاریخ: ${x.eventDate || new Date(x.createdAt).toISOString().slice(0, 10)}\n\n${x.markdownBody}\n\n${(x.checklistItems || []).map((i) => `- [${i.done ? 'x' : ' '}] ${i.text}`).join('\n')}`,
+        )
+        .join('\n\n---\n\n')
+    saveDownload(
+      new Blob([md], { type: 'text/markdown;charset=utf-8' }),
+      `atlas-${p.id}.md`,
+    )
+  }
+  return (
+    <div className="app-shell">
+      <aside className={`sidebar ${drawer ? 'open' : ''}`}>
+        <div className="brand">
+          <img
+            className="brand-icon"
+            src="/icon-192.png"
+            alt="آیکون Atlas"
+            width={42}
+            height={42}
+          />
+          <div>
+            <strong>
+              اطلس<span className="brand-dot">.</span>
+            </strong>
+            <small>دفتر پروژه‌های شخصی</small>
+          </div>
+          <button
+            className="icon-button close-nav"
+            onClick={() => setDrawer(false)}
+          >
+            <X size={19} />
+          </button>
+        </div>
+        <p className="side-label">فضای کار</p>
+        <nav>
+          {navigation.map(([id, label, Icon]) => (
+            <button
+              key={id}
+              onClick={() => go(id)}
+              className={`nav-entry ${page === id || (page === 'project' && id === 'projects') ? 'active' : ''}`}
+            >
+              <Icon size={19} />
+              <span>{label}</span>
+              {id === 'inbox' && inbox.length > 0 && (
+                <span className="mini-count">{inbox.length}</span>
+              )}
+            </button>
+          ))}
+        </nav>
+        <div className="sidebar-foot">
+          <div className="offline-label">
+            <span className="online-dot" /> فقط ذخیره محلی{' '}
+            <small>Cloud Sync هنوز فعال نشده</small>
+          </div>
+          <small dir="ltr" className="atlas-release-label">
+            Atlas v{__ATLAS_VERSION__} · tetha
+          </small>
+        </div>
+      </aside>
+      {drawer && (
+        <button
+          className="nav-shade"
+          onClick={() => setDrawer(false)}
+          aria-label="بستن منو"
+        />
+      )}
+      <main className="main-area">
+        <header className="topbar">
+          <div className="head-crumb">
+            <button
+              className="icon-button menu"
+              onClick={() => setDrawer(true)}
+            >
+              <Menu size={22} />
+            </button>
+            <span>Atlas</span>
+            <span className="divider-slash">/</span>
+            <b>
+              {page === 'project'
+                ? project?.title || 'پروژه'
+                : navigation.find((n) => n[0] === page)?.[1]}
+            </b>
+          </div>
+          <div className="head-actions">
+            <span className="local-status">
+              <span className="online-dot" /> محلی
+            </span>
+            <button
+              className="icon-button"
+              aria-label="تغییر تم"
+              onClick={() =>
+                setTheme(resolvedTheme === 'light' ? 'dark' : 'light')
+              }
+            >
+              {resolvedTheme === 'light' ? (
+                <Moon size={19} />
+              ) : (
+                <Sun size={19} />
+              )}
+            </button>
+          </div>
+        </header>
+        <div className="content">
+          {page === 'dashboard' && (
+            <Dashboard
+              dashQuery={dashQuery}
+              setDashQuery={setDashQuery}
+              activeProjects={activeProjects}
+              go={go}
+              setFilter={setFilter}
+              mainTasks={mainTasks}
+              projects={projects}
+              activities={activities}
+              cards={cards}
+              setProjectForm={setProjectForm}
+            />
+          )}
+          {page === 'projects' && (
+            <Projects
+              setProjectForm={setProjectForm}
+              query={query}
+              setQuery={setQuery}
+              filter={filter}
+              setFilter={setFilter}
+              projects={projects}
+              cards={cards}
+              go={go}
+            />
+          )}
+          {page === 'project' && project && (
+            <ProjectNotebook
+              go={go}
+              project={project}
+              setProjectForm={setProjectForm}
+              exportProject={exportProject}
+              cards={cards}
+              selected={selected}
+              setCardForm={setCardForm}
+              query={query}
+              setQuery={setQuery}
+              filter={filter}
+              setFilter={setFilter}
+              cardList={cardList}
+              updateCard={updateCard}
+              removeCard={removeCard}
+              toggleChecklist={toggleChecklist}
+            />
+          )}
+          {page === 'planner' && (
+            <Planner
+              cards={cards}
+              updateCard={updateCard}
+              go={go}
+              projects={projects}
+            />
+          )}
+          {page === 'prompts' && (
+            <Prompts
+              setPromptForm={setPromptForm}
+              query={query}
+              setQuery={setQuery}
+              promptTag={promptTag}
+              setPromptTag={setPromptTag}
+              prompts={prompts}
+              toast={toast}
+            />
+          )}
+          {page === 'inbox' && (
+            <Inbox projects={projects} toast={toast} inbox={inbox} />
+          )}
+          {page === 'settings' && (
+            <Settings
+              newCategory={newCategory}
+              projectTypes={projectTypes}
+              toast={toast}
+              setNewCategory={setNewCategory}
+              projects={projects}
+              theme={theme}
+              setTheme={setTheme}
+              fileRef={fileRef}
+              importFile={importFile}
+            />
+          )}
+        </div>
+      </main>
+      {projectForm !== undefined && (
+        <ProjectModal
+          projectTypes={projectTypes}
+          initial={projectForm}
+          onClose={() => setProjectForm(undefined)}
+          onSaved={(p) => {
+            setProjectForm(undefined)
+            toast('پروژه ذخیره شد.')
+            go('project', p.id)
+          }}
+          onDelete={removeProject}
+        />
+      )}
+      {cardForm !== undefined && selected && (
+        <CardModal
+          projectId={selected}
+          initial={cardForm}
+          onClose={() => setCardForm(undefined)}
+          onSaved={() => {
+            setCardForm(undefined)
+            toast('کارت ذخیره شد.')
+          }}
+        />
+      )}
+      {promptForm !== undefined && (
+        <PromptModal
+          initial={promptForm}
+          projects={projects}
+          prompts={prompts}
+          onClose={() => setPromptForm(undefined)}
+          onSaved={() => {
+            setPromptForm(undefined)
+            toast('پرامپت ذخیره شد.')
+          }}
+        />
+      )}
+      {notice && (
+        <div className="toast">
+          <Check size={17} />
+          {notice}
+        </div>
+      )}
+      <nav className="mobile-tabs">
+        {navigation.slice(0, 5).map(([id, label, Icon]) => (
+          <button
+            key={id}
+            className={
+              page === id || (page === 'project' && id === 'projects')
+                ? 'active'
+                : ''
+            }
+            onClick={() => go(id)}
+          >
+            <Icon size={20} />
+            <span>{label}</span>
+          </button>
+        ))}
+      </nav>
+    </div>
+  )
 }
+<<<<<<< HEAD
 function App(){
  const [page,setPage]=useState<Page>('dashboard'),[selected,setSelected]=useState<string>(''),[drawer,setDrawer]=useState(false),[theme,setTheme]=useState<'light'|'dark'|'system'>(()=>{const saved=localStorage.getItem('atlas-theme-mode');return saved==='light'||saved==='dark'?saved:'system'}),[systemDark,setSystemDark]=useState(()=>window.matchMedia('(prefers-color-scheme: dark)').matches),[notice,setNotice]=useState('')
  const [projectForm,setProjectForm]=useState<Project|null|undefined>(undefined),[cardForm,setCardForm]=useState<Card|null|undefined>(undefined),[promptForm,setPromptForm]=useState<Prompt|null|undefined>(undefined)
@@ -101,4 +508,7 @@ function PromptModal({initial,projects,onClose,onSaved}:{initial:Prompt|null;pro
  return <Modal title={initial?'ویرایش پرامپت':'پرامپت جدید'} onClose={onClose}><form className="form" onSubmit={submit}><label>عنوان پرامپت<input required maxLength={130} value={title} onChange={e=>setTitle(e.target.value)}/></label><label>توضیح مختصر<input value={description} onChange={e=>setDescription(e.target.value)}/></label><label>بدنه پرامپت<textarea className="code-editor" dir="auto" rows={10} required value={body} onChange={e=>setBody(e.target.value)} placeholder="متن کامل پرامپت را اینجا بنویس..."/></label><label>تگ‌ها (جداشده با کاما)<input value={tags} onChange={e=>setTags(e.target.value)} placeholder="SEO, Coding, Research"/></label><label>پروژه مرتبط (اختیاری)<select value={projectId} onChange={e=>setProjectId(e.target.value)}><option value="">بدون پروژه</option>{projects.map(p=><option key={p.id} value={p.id}>{p.title}</option>)}</select></label><label className="check-label"><input type="checkbox" checked={favorite} onChange={e=>setFavorite(e.target.checked)}/> افزودن به علاقه‌مندی‌ها</label><div className="form-footer"><button type="button" className="soft-button" onClick={onClose}>انصراف</button><button className="primary" type="submit">ذخیره پرامپت</button></div></form></Modal>
 }
 function InboxComposer({projects,onDone}:{projects:Project[];onDone:()=>void}){const [text,setText]=useState(''),[kind,setKind]=useState<InboxKind>('idea'),[projectId,setProjectId]=useState('');async function submit(e:FormEvent){e.preventDefault();if(!text.trim())return;const now=Date.now();await db.inbox.add({id:uid(),content:text.trim(),kind,projectId:projectId||undefined,createdAt:now,updatedAt:now});setText('');onDone()}return <form className="panel capture" onSubmit={submit}><textarea rows={4} value={text} onChange={e=>setText(e.target.value)} placeholder="چه چیزی در ذهنت هست؟ همین‌جا ثبتش کن..." required/><div className="capture-footer"><div><select value={kind} onChange={e=>setKind(e.target.value as InboxKind)}><option value="idea">ایده</option><option value="task">تسک</option><option value="note">یادداشت</option></select><select value={projectId} onChange={e=>setProjectId(e.target.value)}><option value="">بدون پروژه</option>{projects.map(p=><option value={p.id} key={p.id}>{p.title}</option>)}</select></div><button className="primary" type="submit"><Plus size={17}/> ثبت سریع</button></div></form>}
+=======
+
+>>>>>>> 9d42e27 (optimizations)
 export default App
