@@ -6,7 +6,7 @@ import './style.css'
 type AuthComponent = React.ComponentType
 
 function Bootstrap() {
-  const [status, setStatus] = useState<'loading' | 'setup' | 'ready' | 'error'>('loading')
+  const [status, setStatus] = useState<'loading' | 'setup' | 'ready' | 'storage-error' | 'module-error'>('loading')
   const [Auth, setAuth] = useState<AuthComponent | null>(null)
   const [email, setEmail] = useState('')
   const [url, setUrl] = useState('')
@@ -21,9 +21,13 @@ function Bootstrap() {
       setBootSettings(saved)
       // Import AuthGate only after the URL is known. Its db dependency configures
       // Dexie Cloud before the first DB request, and never gets a placeholder URL.
-      const loaded = await import('./AuthGate')
-      if (active) { setAuth(() => loaded.default); setStatus('ready') }
-    }).catch(e => { if (active) { setError(e instanceof Error ? e.message : String(e)); setStatus('error') } })
+      try {
+        const loaded = await import('./AuthGate')
+        if (active) { setAuth(() => loaded.default); setStatus('ready') }
+      } catch (e) {
+        if (active) { setError(e instanceof Error ? e.message : String(e)); setStatus('module-error') }
+      }
+    }).catch(e => { if (active) { setError(e instanceof Error ? e.message : String(e)); setStatus('storage-error') } })
     return () => { active = false }
   }, [])
 
@@ -47,7 +51,8 @@ function Bootstrap() {
   return <main className="atlas-auth-screen" dir="rtl"><section className="atlas-auth-panel">
     <div className="atlas-auth-logo">A</div>
     {status === 'loading' ? <><h1>اطلس</h1><p role="status">در حال بارگذاری تنظیمات دستگاه…</p></> :
-      status === 'error' ? <><h1>خطای ذخیره‌سازی</h1><p>مرورگر اجازه دسترسی به IndexedDB را نمی‌دهد. حالت Private Browsing را بررسی کن.</p></> :
+      status === 'storage-error' ? <><h1>خطای ذخیره‌سازی</h1><p>خواندن تنظیمات ذخیره‌شده روی این دستگاه ناموفق بود. دسترسی مرورگر به IndexedDB را بررسی کن.</p></> :
+      status === 'module-error' ? <><h1>خطای بارگذاری برنامه</h1><p>بخشی از برنامه بارگذاری نشد. اتصال اینترنت را بررسی کن و دوباره تلاش کن. اگر برنامه تازه به‌روزرسانی شده، صفحه را با بارگذاری مجدد کامل باز کن.</p><button className="primary" type="button" onClick={() => window.location.reload()}>تلاش دوباره</button></> :
       <><h1>راه‌اندازی اطلس</h1><p>یک بار ایمیل و آدرس دیتابیس شخصی Dexie Cloud را وارد کن. اطلاعات فقط روی همین دستگاه ذخیره می‌شوند.</p>
         <form onSubmit={e => void submit(e)} className="atlas-setup-form">
           <label>ایمیل حساب<input type="email" required autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com" dir="ltr"/></label>
