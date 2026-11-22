@@ -47,12 +47,30 @@ function Bootstrap() {
     }
   }
 
+  async function refreshAppFiles() {
+    setBusy(true)
+    try {
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations()
+        await Promise.all(registrations.map(registration => registration.unregister()))
+      }
+      if ('caches' in window) {
+        const names = await caches.keys()
+        await Promise.all(names.map(name => caches.delete(name)))
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e))
+    } finally {
+      window.location.reload()
+    }
+  }
+
   if (status === 'ready' && Auth) return <Auth />
   return <main className="atlas-auth-screen" dir="rtl"><section className="atlas-auth-panel">
     <div className="atlas-auth-logo">A</div>
     {status === 'loading' ? <><h1>اطلس</h1><p role="status">در حال بارگذاری تنظیمات دستگاه…</p></> :
       status === 'storage-error' ? <><h1>خطای ذخیره‌سازی</h1><p>خواندن تنظیمات ذخیره‌شده روی این دستگاه ناموفق بود. دسترسی مرورگر به IndexedDB را بررسی کن.</p></> :
-      status === 'module-error' ? <><h1>خطای بارگذاری برنامه</h1><p>بخشی از برنامه بارگذاری نشد. اتصال اینترنت را بررسی کن و دوباره تلاش کن. اگر برنامه تازه به‌روزرسانی شده، صفحه را با بارگذاری مجدد کامل باز کن.</p><button className="primary" type="button" onClick={() => window.location.reload()}>تلاش دوباره</button></> :
+      status === 'module-error' ? <><h1>خطای بارگذاری برنامه</h1><p>بخشی از برنامه بارگذاری نشد. اتصال اینترنت را بررسی کن و دوباره تلاش کن. اگر خطا ادامه دارد، فایل‌های برنامه را دوباره دریافت کن؛ این کار داده‌های ذخیره‌شده را پاک نمی‌کند.</p><button className="primary" type="button" onClick={() => window.location.reload()}>تلاش دوباره</button><button className="soft-button" type="button" disabled={busy} onClick={() => void refreshAppFiles()}>{busy ? 'در حال بازنشانی…' : 'دریافت دوباره فایل‌های برنامه'}</button></> :
       <><h1>راه‌اندازی اطلس</h1><p>یک بار ایمیل و آدرس دیتابیس شخصی Dexie Cloud را وارد کن. اطلاعات فقط روی همین دستگاه ذخیره می‌شوند.</p>
         <form onSubmit={e => void submit(e)} className="atlas-setup-form">
           <label>ایمیل حساب<input type="email" required autoComplete="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com" dir="ltr"/></label>
