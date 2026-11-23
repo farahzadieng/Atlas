@@ -5,11 +5,10 @@ dist
 !.env.example
 .DS_Store
 
-# Never commit privileged Dexie Cloud CLI keys
 dexie-cloud.key
 dexie-cloud.json
-.env
-.env.*
-
 
 /atlas.config.json
+
+APPLE_DEEPLINK_SETUP.md
+APPLE_SHORTCUTS_SETUP.md
