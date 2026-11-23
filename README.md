@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Atlas — Personal Knowledge Manager
 
 ![Atlas app icon](./public/icon-512.png)
@@ -114,10 +115,24 @@ The database URL and email are **not secrets**. They are saved in a separate, de
 ```bash
 git clone https://github.com/farahzadieng/Atlas.git
 cd Atlas
+=======
+> **نسخه فعلی v0.3:** تغییرات تازه را در `CHANGES_v0.3.md` و راه‌اندازی Apple Shortcuts را در `APPLE_SHORTCUTS_SETUP.md` ببینید.
+
+# Atlas v0.2 — Personal Knowledge Manager
+
+A private, Persian RTL, card-based local-first PWA built with React + TypeScript + Dexie.
+
+## Start
+
+Requires Node.js compatible with Vite 7 (Node 20.19+ or 22.12+).
+
+```bash
+>>>>>>> 95254a9 (first deploy)
 npm install
 npm run dev
 ```
 
+<<<<<<< HEAD
 Open the local URL printed by Vite, typically `http://localhost:5173`. The first-run setup screen will ask for your **email** and your **Dexie Cloud database URL**. You do not create or commit any `atlas.config.json` file.
 
 If you want to use Dexie Cloud with local development, whitelist the **exact origin** shown by the development server. The port matters.
@@ -170,10 +185,16 @@ npm run format:check
 npm run lint
 npm run typecheck
 npm test
+=======
+Open the localhost address shown by Vite. To test production/PWA:
+
+```bash
+>>>>>>> 95254a9 (first deploy)
 npm run build
 npm run preview
 ```
 
+<<<<<<< HEAD
 Use `npm run format` to format the application components and test files. See [AGENTS.md](./AGENTS.md) for the feature map, data contracts, and UI conventions.
 
 The build output is the `dist/` directory. You should see the app HTML, JavaScript, CSS, generated PWA manifest, service worker, font, and icon assets in the build output. The deploy command and asset-directory configuration depend on your hosting provider.
@@ -248,3 +269,48 @@ If you are using a GitHub fork, upstream changes do not appear automatically unl
 The UI is Farsi-first; issues, documentation, and contributions can be written in English. If you publish your own changes, avoid putting personal database URLs or administrative credentials into commits. The app icon is located under `public/` and the installed PWA manifest is generated from `vite.config.ts`.
 
 **Licensing:** Confirm the repository's actual license and the licenses of bundled assets before distributing the project. In particular, do not assume the included AradVF font can be redistributed without permission. A public GitHub repository does not, by itself, grant an open-source license.
+=======
+PWA install and offline caching work best on localhost or HTTPS. Test offline after opening the production preview while online at least once.
+
+## Implemented
+
+- Projects with `active`, `rest`, `suspended`, `completed` statuses and separate archival
+- Dedicated project notebooks, sorted by event date (newest first); pinned cards first
+- `task`, `log`, `note`, `checklist`, `decision` cards
+- Markdown preview and rendered GFM, interactive checklist toggles; unsafe raw HTML not enabled
+- Multiple main tasks per project, surfaced on dashboard
+- Task statuses, priorities, due dates, `.ics` file export for Apple Calendar import
+- Prompt library, favorites, tag filter and body copy
+- Inbox quick capture and conversion to a card when assigned to a project
+- Dashboard, activity audit trail, search, mobile navigation, responsive light/dark themes
+- Local AradVF font (`public/fonts/AradVF.woff2`)
+- JSON backup/export and merge import, including support for version 1 backups
+- Markdown export per project
+
+## Important limitations
+
+- **Not deployed.** No external services configured.
+- **No Dexie Cloud yet.** Data stays in IndexedDB on the current browser/device; there is no cross-device sync and browser data removal can delete it. Export backups frequently.
+- Apple Calendar: exports an all-day `.ics` based on task due date, and the user imports it manually. This is **not** live sync.
+- Apple Reminders: direct creation and Shortcuts bridge **not yet implemented**, pending testing on target Apple devices.
+- No automatic background sync, push notifications, or end-to-end encryption.
+- Browser PWA installation support differs by platform; SVG icon is included, and raster icons may be added for broader installation support.
+- Import is merge/upsert, not replacement; keep backups in a safe place and avoid importing untrusted JSON.
+- User-provided font is bundled for personal use; verify font distribution license before sharing or publishing the code.
+
+## Data migration
+
+This version uses the **same Dexie database name `atlas-local-v1`** as the earlier v0.1 and upgrades it to schema version 2. Prior projects and inbox entries remain. Legacy `paused` becomes `rest` and legacy `archived` becomes `rest` with archival timestamp. Always export a backup from v0.1 before opening v0.2 on the same origin.
+
+## Design decisions
+
+- Markdown is stored as source text, not as HTML.
+- Multiple `isMainTask` cards are allowed within any project.
+- Date of event is distinct from timestamps of creation/update and task due date.
+- Archive is a separate field from project status.
+- Theme preference is device-local.
+- Database architecture is designed for later sync integration, but **Dexie Cloud requires additional schema and identity/security review** before enabling sync. Do not assume switching it on is just a config flag.
+
+## Apple Deep Links (iPhone and macOS Safari)
+See `APPLE_DEEPLINK_SETUP.md`. Task due dates now support selecting both date and time. No direct EventKit integration or two-way Apple sync is implied.
+>>>>>>> 95254a9 (first deploy)

@@ -1,10 +1,15 @@
 {
   "name": "atlas-personal-knowledge-manager",
+<<<<<<< HEAD
   "version": "0.5.3 - theta",
+=======
+  "version": "0.4.2",
+>>>>>>> 95254a9 (first deploy)
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
+<<<<<<< HEAD
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview --host 0.0.0.0",
     "typecheck": "tsc --noEmit",
@@ -16,11 +21,20 @@
   "dependencies": {
     "dexie": "^4.2.0",
     "dexie-cloud-addon": "^4.0.1",
+=======
+    "build": "tsc -b && vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "dexie": "^4.2.0",
+>>>>>>> 95254a9 (first deploy)
     "dexie-react-hooks": "^4.2.0",
     "lucide-react": "^0.468.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-markdown": "^10.1.0",
+<<<<<<< HEAD
     "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
@@ -38,5 +52,17 @@
     "vite": "^7.2.0",
     "vite-plugin-pwa": "^1.1.0",
     "vitest": "^3.2.7"
+=======
+    "remark-gfm": "^4.0.1",
+    "dexie-cloud-addon": "^4.0.1"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "^5.1.0",
+    "typescript": "~5.9.3",
+    "vite": "^7.2.0",
+    "vite-plugin-pwa": "^1.1.0"
+>>>>>>> 95254a9 (first deploy)
   }
 }
