@@ -14,7 +14,7 @@ interface DashboardProps {
   dashQuery: string
   setDashQuery: Dispatch<SetStateAction<string>>
   activeProjects: Project[]
-  go: (p: Page, id?: string) => void
+  go: (p: Page, id?: string, cardId?: string) => void
   setFilter: Dispatch<SetStateAction<string>>
   mainTasks: Card[]
   projects: Project[]
@@ -118,7 +118,7 @@ export function Dashboard({
               <button
                 key={c.id}
                 className="task-row"
-                onClick={() => go('project', c.projectId)}
+                onClick={() => go('project', c.projectId, c.id)}
               >
                 <span className="task-indicator" />
                 <span>

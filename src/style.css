@@ -9,7 +9,6 @@
 .atlas-auth-panel h1{margin:0}.atlas-auth-panel p{margin:0;color:var(--muted,#687185)}
 .atlas-auth-panel button{justify-content:center}.atlas-auth-logo{display:grid;place-items:center;margin:auto;width:50px;height:50px;background:#315be8;color:white;font-size:26px;font-weight:700;border-radius:14px}
 .atlas-auth-email{padding:12px;border:1px solid #9daec144;border-radius:9px;overflow-wrap:anywhere}.atlas-auth-error{color:#c84242!important}.atlas-auth-panel small{opacity:.7}.atlas-dev-warning{padding:9px 16px;background:#ffedc5;color:#724e09;text-align:center;font-size:13px}
-<<<<<<< HEAD
 
 /* Atlas v0.4.3 — iOS home-screen safe areas and readable bottom navigation */
 @media (max-width:850px) {
@@ -144,5 +143,20 @@
   color: var(--text);
   font-size: 12px;
 }
-=======
->>>>>>> 95254a9 (first deploy)
+
+/* Keep the project notebook sections on one shared content width. */
+.project-banner,
+.cards-heading,
+.toolbar:has(+ .timeline),
+.timeline,
+.focus-back {
+  width: min(100%, 920px);
+  max-width: 920px;
+}
+.focus-back { margin: 0 0 18px; justify-content: flex-start; }
+.category-edit { display: flex; align-items: center; gap: 4px; min-width: 0; }
+.category-edit input { width: min(210px, 42vw); }
+@media (max-width: 560px) {
+  .project-banner, .cards-heading, .toolbar:has(+ .timeline), .timeline, .focus-back { width: 100%; }
+  .cards-heading { align-items: flex-start; }
+}

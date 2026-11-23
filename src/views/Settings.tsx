@@ -14,10 +14,18 @@ import {
   Download,
   Upload,
   Archive,
+  Edit3,
+  Check,
+  X,
 } from 'lucide-react'
 import { allowedEmail, cloudUrl } from '../atlasConfig'
 import { saveSettings } from '../deviceSettings'
-import { type Dispatch, type SetStateAction, type RefObject } from 'react'
+import {
+  useState,
+  type Dispatch,
+  type SetStateAction,
+  type RefObject,
+} from 'react'
 
 interface SettingsProps {
   newCategory: string
@@ -42,6 +50,25 @@ export function Settings({
   fileRef,
   importFile,
 }: SettingsProps) {
+  const [editingCategory, setEditingCategory] = useState<string | null>(null)
+  const [editedTitle, setEditedTitle] = useState('')
+  async function saveCategory(id: string) {
+    const title = editedTitle.trim()
+    if (!title) return
+    if (
+      projectTypes.some(
+        (type) =>
+          type.id !== id &&
+          type.title.toLocaleLowerCase('fa') === title.toLocaleLowerCase('fa'),
+      )
+    ) {
+      toast('این نوع قبلاً وجود دارد.')
+      return
+    }
+    await db.projectTypes.update(id, { title })
+    setEditingCategory(null)
+    toast('نوع پروژه ویرایش شد.')
+  }
   return (
     <>
       <div className="page-heading">
@@ -98,7 +125,52 @@ export function Settings({
           <div className="category-list">
             {projectTypes.map((t) => (
               <div className="category-item" key={t.id}>
-                <span>{t.title}</span>
+                {editingCategory === t.id ? (
+                  <form
+                    className="category-edit"
+                    onSubmit={(e) => {
+                      e.preventDefault()
+                      void saveCategory(t.id)
+                    }}
+                  >
+                    <input
+                      aria-label="نام نوع پروژه"
+                      value={editedTitle}
+                      maxLength={60}
+                      autoFocus
+                      onChange={(e) => setEditedTitle(e.target.value)}
+                    />
+                    <button
+                      className="icon-button"
+                      type="submit"
+                      title="ذخیره نوع پروژه"
+                    >
+                      <Check size={16} />
+                    </button>
+                    <button
+                      className="icon-button"
+                      type="button"
+                      title="انصراف"
+                      onClick={() => setEditingCategory(null)}
+                    >
+                      <X size={16} />
+                    </button>
+                  </form>
+                ) : (
+                  <>
+                    <span>{t.title}</span>
+                    <button
+                      className="icon-button"
+                      title="ویرایش نوع پروژه"
+                      onClick={() => {
+                        setEditingCategory(t.id)
+                        setEditedTitle(t.title)
+                      }}
+                    >
+                      <Edit3 size={16} />
+                    </button>
+                  </>
+                )}
                 <button
                   className="icon-button"
                   title="حذف نوع پروژه"

@@ -1,15 +1,10 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
-<<<<<<< HEAD
 import packageJson from './package.json'
 
 export default defineConfig({
   define: { __ATLAS_VERSION__: JSON.stringify(packageJson.version) },
-=======
-
-export default defineConfig({
->>>>>>> 95254a9 (first deploy)
   plugins: [
     react(),
     VitePWA({
@@ -20,27 +15,16 @@ export default defineConfig({
         'icon-192.png',
         'icon-512.png',
         'icon-maskable-512.png',
+        'icon-dark-192.png',
+        'icon-dark-512.png',
+        'icon-dark-maskable-512.png',
+        'apple-touch-icon-dark.png',
+        'favicon-dark-64.png',
+        'manifest-light.webmanifest',
+        'manifest-dark.webmanifest',
         'fonts/AradVF.woff2',
       ],
-      manifest: {
-        id: '/',
-        name: 'Atlas — Personal Knowledge Manager',
-        short_name: 'Atlas',
-        description: 'دفتر شخصی پروژه‌ها، کارت‌ها و پرامپت‌ها',
-        lang: 'fa',
-        dir: 'rtl',
-        start_url: '/',
-        scope: '/',
-        display: 'standalone',
-        orientation: 'any',
-        background_color: '#f7f5ef',
-        theme_color: '#315be8',
-        icons: [
-          { src: '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
-          { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
-          { src: '/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
-        ],
-      },
+      manifest: false,
       workbox: {
         navigateFallback: '/index.html',
         globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],

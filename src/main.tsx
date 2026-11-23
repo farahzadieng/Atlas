@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import React, { useEffect, useState, type FormEvent } from 'react'
 import { createRoot } from 'react-dom/client'
 import { loadSettings, normalizeSettings, saveSettings, setBootSettings, type DeviceSettings } from './deviceSettings'
@@ -83,10 +82,3 @@ function Bootstrap() {
 }
 
 createRoot(document.getElementById('root')!).render(<React.StrictMode><Bootstrap /></React.StrictMode>)
-=======
-import React from 'react'
-import {createRoot} from 'react-dom/client'
-import AuthGate from './AuthGate'
-import './style.css'
-createRoot(document.getElementById('root')!).render(<React.StrictMode><AuthGate/></React.StrictMode>)
->>>>>>> 95254a9 (first deploy)

@@ -5,7 +5,6 @@ dist
 !.env.example
 .DS_Store
 
-<<<<<<< HEAD
 dexie-cloud.key
 dexie-cloud.json
 
@@ -13,10 +12,3 @@ dexie-cloud.json
 
 APPLE_DEEPLINK_SETUP.md
 APPLE_SHORTCUTS_SETUP.md
-=======
-# Never commit privileged Dexie Cloud CLI keys
-dexie-cloud.key
-dexie-cloud.json
-.env
-.env.*
->>>>>>> 95254a9 (first deploy)

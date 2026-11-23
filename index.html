@@ -2,17 +2,61 @@
 <html lang="fa" dir="rtl">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#315be8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <meta
+      name="theme-color"
+      content="#315be8"
+      media="(prefers-color-scheme: light)"
+    />
+    <meta
+      name="theme-color"
+      content="#151b27"
+      media="(prefers-color-scheme: dark)"
+    />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-<<<<<<< HEAD
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-=======
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
->>>>>>> 95254a9 (first deploy)
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
     <meta name="apple-mobile-web-app-title" content="Atlas" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <link rel="icon" type="image/png" sizes="64x64" href="/favicon-64.png" />
+    <link
+      id="atlas-manifest"
+      rel="manifest"
+      href="/manifest-light.webmanifest"
+    />
+    <link
+      id="atlas-touch-icon"
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/apple-touch-icon.png"
+    />
+    <link
+      id="atlas-favicon"
+      rel="icon"
+      type="image/png"
+      sizes="64x64"
+      href="/favicon-64.png"
+    />
+    <script>
+      const colorScheme = window.matchMedia('(prefers-color-scheme: dark)')
+      const themeAssets = () => {
+        const dark = colorScheme.matches
+        document.getElementById('atlas-manifest').href = dark
+          ? '/manifest-dark.webmanifest'
+          : '/manifest-light.webmanifest'
+        document.getElementById('atlas-touch-icon').href = dark
+          ? '/apple-touch-icon-dark.png'
+          : '/apple-touch-icon.png'
+        document.getElementById('atlas-favicon').href = dark
+          ? '/favicon-dark-64.png'
+          : '/favicon-64.png'
+      }
+      themeAssets()
+      colorScheme.addEventListener('change', themeAssets)
+    </script>
     <title>Atlas | مدیر دانش شخصی</title>
   </head>
   <body>
